@@ -53,7 +53,7 @@ public class LoginActivity extends Activity {
 
         Preferences.logoutUser( //
                 ((CogSurvDroid) getApplication()).getCogSurver(), //
-                PreferenceManager.getDefaultSharedPreferences(this).edit());
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit());
 
         // Set up the UI.
         ensureUi();
@@ -117,15 +117,15 @@ public class LoginActivity extends Activity {
             }
         });
 
-        mNewAccountTextView = (TextView) findViewById(R.id.newAccountTextView);
+/*        mNewAccountTextView = (TextView) findViewById(R.id.newAccountTextView);
         mNewAccountTextView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent( 
-                //        Intent.ACTION_VIEW, Uri.parse(Foursquare.FOURSQUARE_MOBILE_SIGNUP)));
+                startActivity(new Intent( 
+                        Intent.ACTION_VIEW, Uri.parse(Foursquare.FOURSQUARE_MOBILE_SIGNUP)));
             }
         });
-
+*/
         mPhoneUsernameEditText = ((EditText) findViewById(R.id.phoneEditText));
         mPasswordEditText = ((EditText) findViewById(R.id.passwordEditText));
 
@@ -176,7 +176,7 @@ public class LoginActivity extends Activity {
         protected Boolean doInBackground(Void... params) {
             if (DEBUG) Log.d(TAG, "doInBackground()");
             SharedPreferences prefs = PreferenceManager
-                    .getDefaultSharedPreferences(LoginActivity.this);
+                    .getDefaultSharedPreferences(getApplicationContext());
             Editor editor = prefs.edit();
             CogSurvDroid cogSurvDroid = (CogSurvDroid) getApplication();
             CogSurver cogSurver = cogSurvDroid.getCogSurver();

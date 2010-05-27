@@ -8,7 +8,7 @@ public class TravelFix implements CogSurvType {
     private int mUserId;
     private double mLatitude;
     private double mLongitude;
-    private float mAltitude;
+    private double mAltitude;
     private float mSpeed;
     private float mAccuracy;
     private String mPositioningMethod;
@@ -45,10 +45,10 @@ public class TravelFix implements CogSurvType {
     public void setLongitude(double mLongitude) {
         this.mLongitude = mLongitude;
     }
-    public float getAltitude() {
+    public double getAltitude() {
         return mAltitude;
     }
-    public void setAltitude(float mAltitude) {
+    public void setAltitude(double mAltitude) {
         this.mAltitude = mAltitude;
     }
     public float getSpeed() {

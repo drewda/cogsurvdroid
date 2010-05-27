@@ -1,6 +1,6 @@
 package org.cogsurv.droid;
 
-import org.cogsurv.cogsurver.content.CogSurverProviderUtils;
+import org.cogsurv.droid.app.TravelLogService;
 import org.cogsurv.droid.preferences.Preferences;
 
 import android.app.Activity;
@@ -40,10 +40,11 @@ public class MainActivity extends Activity {
         }
 
         if (DEBUG) Log.d(TAG, "Setting up main activity layout.");
+        
+        // if TravelLogService isn't already started, start it
+        ((CogSurvDroid)getApplication()).requestStartService();
 
         setContentView(R.layout.main_activity);
- 
-        CogSurverProviderUtils mCogSurverProviderUtils = new CogSurverProviderUtils(this);
         
         // TODO: sometime we need to load landmarks
     }
@@ -86,8 +87,14 @@ public class MainActivity extends Activity {
     case MENU_SWITCH_USER:
       if (Preferences.logoutUser( //
           ((CogSurvDroid) getApplication()).getCogSurver(), //
-          PreferenceManager.getDefaultSharedPreferences(this).edit())) {
-        redirectToLoginActivity();
+          PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit())) {
+        // (1) stop TravelLogService
+        //Intent serviceIntent = new Intent(this, TravelLogService.class);
+        //stopService(serviceIntent);
+        // (2) go to login again
+        //redirectToLoginActivity();
+        sendBroadcast(new Intent(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
+        return true;
       }
       return true;
       // org.cogsurv.droid.preferences.Preferences.logoutUser(((CogSurvDroid)
@@ -97,6 +104,11 @@ public class MainActivity extends Activity {
       // TODO: trigger the sync
       return true;
     case MENU_SHUTDOWN:
+      // (1) stop TravelLogService
+      Intent serviceIntent = new Intent(this, TravelLogService.class);
+      stopService(serviceIntent);
+      
+      // (2) finish MainActivity
       finish();
       return true;
     }

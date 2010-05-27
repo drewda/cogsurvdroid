@@ -71,7 +71,7 @@
             android:layout_weight="1"
             android:padding="3dip"
             android:src="@drawable/line" />
-        <TextView
+        <!--<TextView
             android:id="@+id/newAccountTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -79,6 +79,6 @@
             android:paddingBottom="2dip"
             android:textAppearance="@android:style/TextAppearance.Large"
             android:textColor="#FFF"
-            android:text="@string/need_an_account" />
+            android:text="@string/need_an_account" />-->
     </LinearLayout>
 </LinearLayout>

@@ -86,6 +86,13 @@ abstract public class AbstractHttpApi implements HttpApi {
                 } finally {
                     is.close();
                 }
+            case 201:
+              is = response.getEntity().getContent();
+              try {
+                  return parser.parse(AbstractParser.createXmlPullParser(is));
+              } finally {
+                  is.close();
+              }
 
             case 401:
                 response.getEntity().consumeContent();

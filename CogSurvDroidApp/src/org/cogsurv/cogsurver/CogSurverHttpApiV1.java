@@ -11,15 +11,12 @@ import org.cogsurv.cogsurver.error.CogSurvError;
 import org.cogsurv.cogsurver.error.CogSurvException;
 import org.cogsurv.cogsurver.http.AbstractHttpApi;
 import org.cogsurv.cogsurver.http.HttpApi;
-import org.cogsurv.cogsurver.http.HttpApiWithOAuth;
-import org.cogsurv.cogsurver.parsers.CredentialsParser;
 import org.cogsurv.cogsurver.parsers.DirectionDistanceEstimateParser;
 import org.cogsurv.cogsurver.parsers.GroupParser;
 import org.cogsurv.cogsurver.parsers.LandmarkParser;
 import org.cogsurv.cogsurver.parsers.LandmarkVisitParser;
 import org.cogsurv.cogsurver.parsers.TravelFixParser;
 import org.cogsurv.cogsurver.parsers.UserParser;
-import org.cogsurv.cogsurver.types.Credentials;
 import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
 import org.cogsurv.cogsurver.types.Group;
 import org.cogsurv.cogsurver.types.Landmark;
@@ -42,8 +39,6 @@ class CogSurverHttpApiV1 {
             .getLogger(CogSurverHttpApiV1.class.getCanonicalName());
     private static final boolean DEBUG = CogSurver.DEBUG;
 
-    private static final String URL_API_AUTHEXCHANGE = "/authexchange";
-
     private static final String URL_API_USERS = "/users.xml";
     private static final String URL_API_TRAVEL_FIXES = "/travel_fixes.xml";
     private static final String URL_API_LANDMARKS = "/landmarks.xml";
@@ -56,15 +51,11 @@ class CogSurverHttpApiV1 {
     private final String mApiBaseUrl;
     private final AuthScope mAuthScope;
 
-    public CogSurverHttpApiV1(String domain, String clientVersion, boolean useOAuth) {
+    public CogSurverHttpApiV1(String domain, String clientVersion) {
         mApiBaseUrl = "http://" + domain + "/api";
         mAuthScope = new AuthScope(domain, 80);
 
-        if (useOAuth) {
-            mHttpApi = new HttpApiWithOAuth(mHttpClient, clientVersion);
-        } else {
-            mHttpApi = new HttpApiWithBasicAuth(mHttpClient, clientVersion);
-        }
+        mHttpApi = new HttpApiWithBasicAuth(mHttpClient, clientVersion);
     }
 
     void setCredentials(String email, String password) {
@@ -83,39 +74,6 @@ class CogSurverHttpApiV1 {
     public boolean hasCredentials() {
         return mHttpClient.getCredentialsProvider().getCredentials(mAuthScope) != null;
     }
-
-    public void setOAuthConsumerCredentials(String oAuthConsumerKey, String oAuthConsumerSecret) {
-        if (DEBUG) {
-            LOG.log(Level.FINE, "Setting consumer key/secret: " + oAuthConsumerKey + " "
-                    + oAuthConsumerSecret);
-        }
-        ((HttpApiWithOAuth) mHttpApi).setOAuthConsumerCredentials(oAuthConsumerKey,
-                oAuthConsumerSecret);
-    }
-
-    public void setOAuthTokenWithSecret(String token, String secret) {
-        if (DEBUG) LOG.log(Level.FINE, "Setting oauth token/secret: " + token + " " + secret);
-        ((HttpApiWithOAuth) mHttpApi).setOAuthTokenWithSecret(token, secret);
-    }
-
-    public boolean hasOAuthTokenWithSecret() {
-        return ((HttpApiWithOAuth) mHttpApi).hasOAuthTokenWithSecret();
-    }
-
-    /*
-     * /authexchange?oauth_consumer_key=d123...a1bffb5&oauth_consumer_secret=fec...
-     * 18
-     */
-    public Credentials authExchange(String email, String password) throws CogSurvException,
-            CogSurvCredentialsException, CogSurvError, IOException {
-        if (((HttpApiWithOAuth) mHttpApi).hasOAuthTokenWithSecret()) {
-            throw new IllegalStateException("Cannot do authExchange with OAuthToken already set");
-        }
-        HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_AUTHEXCHANGE), //
-                new BasicNameValuePair("email", email), //
-                new BasicNameValuePair("password", password));
-        return (Credentials) mHttpApi.doHttpRequest(httpPost, new CredentialsParser());
-    }
    
     @SuppressWarnings("unchecked")
     User readUser() throws CogSurvException, CogSurvCredentialsException, CogSurvError, IOException {
@@ -125,7 +83,7 @@ class CogSurverHttpApiV1 {
         return users.get(0);
     }
     
-    Landmark addLandmark(Landmark landmark)
+    Landmark createLandmark(Landmark landmark)
             throws CogSurvException, CogSurvCredentialsException, CogSurvError, IOException {
         HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_LANDMARKS), 
                 new BasicNameValuePair("foursquareVenueId", landmark.getFoursquareVenueId()),
@@ -152,14 +110,14 @@ class CogSurverHttpApiV1 {
   TravelFix createTravelFix(TravelFix travelFix) throws CogSurvException,
       CogSurvCredentialsException, CogSurvError, IOException {
     HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_TRAVEL_FIXES),
-        new BasicNameValuePair("latitude", String.valueOf(travelFix.getLatitude())), 
-        new BasicNameValuePair("longitude", String.valueOf(travelFix.getLongitude())), 
-        new BasicNameValuePair("altitude", String.valueOf(travelFix.getAltitude())), 
-        new BasicNameValuePair("speed", String.valueOf(travelFix.getSpeed())),
-        new BasicNameValuePair("accuracy", String.valueOf(travelFix.getAccuracy())), 
-        new BasicNameValuePair("positioning-method", travelFix.getPositioningMethod()), 
-        new BasicNameValuePair("travel-mode", travelFix.getTravelMode()), 
-        new BasicNameValuePair("datetime", String.valueOf(travelFix.getDatetime().getTime())));
+        new BasicNameValuePair("travel_fix[latitude]", String.valueOf(travelFix.getLatitude())), 
+        new BasicNameValuePair("travel_fix[longitude]", String.valueOf(travelFix.getLongitude())), 
+        new BasicNameValuePair("travel_fix[altitude]", String.valueOf(travelFix.getAltitude())), 
+        new BasicNameValuePair("travel_fix[speed]", String.valueOf(travelFix.getSpeed())),
+        new BasicNameValuePair("travel_fix[accuracy]", String.valueOf(travelFix.getAccuracy())), 
+        new BasicNameValuePair("travel_fix[positioning_method]", travelFix.getPositioningMethod()), 
+        new BasicNameValuePair("travel_fix[travel-mode]", travelFix.getTravelMode()), 
+        new BasicNameValuePair("travel_fix[datetime]", String.valueOf(travelFix.getDatetime().getTime())));
     return (TravelFix) mHttpApi.doHttpRequest(httpPost, new TravelFixParser());
   }
     

@@ -3,7 +3,6 @@ package org.cogsurv.cogsurver;
 import org.cogsurv.cogsurver.error.CogSurvCredentialsException;
 import org.cogsurv.cogsurver.error.CogSurvError;
 import org.cogsurv.cogsurver.error.CogSurvException;
-import org.cogsurv.cogsurver.types.Credentials;
 import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
 import org.cogsurv.cogsurver.types.Group;
 import org.cogsurv.cogsurver.types.Landmark;
@@ -40,36 +39,16 @@ public class CogSurver {
     mCogSurvV1.setCredentials(email, password);
   }
 
-  public void setOAuthToken(String token, String secret) {
-    mCogSurvV1.setOAuthTokenWithSecret(token, secret);
-  }
-
-  public void setOAuthConsumerCredentials(String oAuthConsumerKey,
-      String oAuthConsumerSecret) {
-    mCogSurvV1.setOAuthConsumerCredentials(oAuthConsumerKey,
-        oAuthConsumerSecret);
-  }
-
   public void clearAllCredentials() {
     setCredentials(null, null);
-    setOAuthToken(null, null);
   }
 
   public boolean hasCredentials() {
-    return mCogSurvV1.hasCredentials() && mCogSurvV1.hasOAuthTokenWithSecret();
+    return mCogSurvV1.hasCredentials();
   }
 
   public boolean hasLoginAndPassword() {
     return mCogSurvV1.hasCredentials();
-  }
-
-  public Credentials authExchange() throws CogSurvException, CogSurvError,
-      CogSurvCredentialsException, IOException {
-    if (mCogSurvV1 == null) {
-      throw new NoSuchMethodError(
-          "authExchange is unavailable without a consumer key/secret.");
-    }
-    return mCogSurvV1.authExchange(mEmail, mPassword);
   }
 
   /*
@@ -82,9 +61,9 @@ public class CogSurver {
     return mCogSurvV1.readUser();
   }
 
-  public Landmark addLandmark(Landmark landmark) throws CogSurvException,
+  public Landmark createLandmark(Landmark landmark) throws CogSurvException,
       CogSurvCredentialsException, CogSurvError, IOException {
-    return mCogSurvV1.addLandmark(landmark);
+    return mCogSurvV1.createLandmark(landmark);
   }
 
   public Group<Landmark> readLandmarks() throws CogSurvException,
@@ -116,14 +95,13 @@ public class CogSurver {
   }
 
   public static final CogSurverHttpApiV1 createHttpApi(String domain,
-      String clientVersion, boolean useOAuth) {
-    LOG.log(Level.INFO, "Using cogsurv.com for requests.");
-    return new CogSurverHttpApiV1(domain, clientVersion, useOAuth);
+      String clientVersion) {
+    LOG.log(Level.INFO, "Using " + domain + " for requests.");
+    return new CogSurverHttpApiV1(domain, clientVersion);
   }
 
-  public static final CogSurverHttpApiV1 createHttpApi(String clientVersion,
-      boolean useOAuth) {
-    return createHttpApi(COGSURV_API_DOMAIN, clientVersion, useOAuth);
+  public static final CogSurverHttpApiV1 createHttpApi(String clientVersion) {
+    return createHttpApi(COGSURV_API_DOMAIN, clientVersion);
   }
 
   public static class Location {

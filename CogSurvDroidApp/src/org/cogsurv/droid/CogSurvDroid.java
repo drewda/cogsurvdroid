@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -26,8 +27,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cogsurv.cogsurver.CogSurver;
+import org.cogsurv.cogsurver.content.CogSurverProvider;
+import org.cogsurv.cogsurver.content.TravelFixesColumns;
+import org.cogsurv.cogsurver.error.CogSurvCredentialsException;
 import org.cogsurv.cogsurver.error.CogSurvError;
 import org.cogsurv.cogsurver.error.CogSurvException;
+import org.cogsurv.cogsurver.types.TravelFix;
 import org.cogsurv.cogsurver.types.User;
 import org.cogsurv.droid.app.TravelLogService;
 import org.cogsurv.droid.error.LocationException;
@@ -78,7 +83,7 @@ public class CogSurvDroid extends Application {
         // Catch logins or logouts.
         new LoggedInOutBroadcastReceiver().register();
 
-        // Log into Foursquare, if we can.
+        // Log into CogSurv, if we can.
         loadCogSurver();
     }
 
@@ -89,7 +94,7 @@ public class CogSurvDroid extends Application {
     public CogSurver getCogSurver() {
         return mCogSurver;
     }
-
+    
     public String getUserId() {
         return Preferences.getUserId(mPrefs);
     }
@@ -150,7 +155,7 @@ public class CogSurvDroid extends Application {
     private void loadCogSurver() {
         // Try logging in and setting up foursquare oauth, then user
         // credentials.
-        mCogSurver = new CogSurver(CogSurver.createHttpApi(mVersion, false));
+        mCogSurver = new CogSurver(CogSurver.createHttpApi(mVersion));
 
         if (CogSurvDroidSettings.DEBUG) Log.d(TAG, "loadCredentials()");
         String email = mPrefs.getString(Preferences.PREFERENCE_LOGIN, null);
@@ -173,7 +178,7 @@ public class CogSurvDroid extends Application {
      */
     public static CogSurver createCogSurver(Context context) {
         String version = getVersionString(context);
-        return new CogSurver(CogSurver.createHttpApi(version, false));
+        return new CogSurver(CogSurver.createHttpApi(version));
     }
 
     /**
@@ -255,4 +260,32 @@ public class CogSurvDroid extends Application {
             }
         }
     }
+    
+    /* DATA HANDLERS */
+    /* TRAVEL FIX */
+    public boolean recordTravelFix(TravelFix travelFix) {
+      Log.d("CogSurv", "CogSurverProviderUtils.recordTravelFix");
+      // if connected to Internet, post to server
+      try {
+        travelFix = mCogSurver.createTravelFix(travelFix);
+      } catch (CogSurvCredentialsException e) {
+        e.printStackTrace();
+      } catch (CogSurvError e) {
+        e.printStackTrace();
+      } catch (CogSurvException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      
+      // in any case, record to DB
+      Uri uri = getContentResolver().insert(TravelFixesColumns.CONTENT_URI,
+          CogSurverProvider.createContentValues(travelFix));
+      long localId = Long.parseLong(uri.getLastPathSegment());
+      Log.d("CogSurv", "recordTravelFix: insert into ContentProvider: localId = " + localId);
+
+      return true;
+    }
+    
+    /* */
 }

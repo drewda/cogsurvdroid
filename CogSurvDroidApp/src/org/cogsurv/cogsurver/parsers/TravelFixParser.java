@@ -35,7 +35,7 @@ public class TravelFixParser extends AbstractParser<TravelFix> {
             } else if ("longitude".equals(name)) {
                 travelFix.setLongitude(Double.parseDouble(parser.nextText()));
             } else if ("altitude".equals(name)) {
-                travelFix.setAltitude(Float.parseFloat(parser.nextText()));
+                travelFix.setAltitude(Double.parseDouble(parser.nextText()));
             } else if ("speed".equals(name)) {
                 travelFix.setSpeed(Float.parseFloat(parser.nextText()));
             } else if ("accuracy".equals(name)) {

@@ -68,7 +68,7 @@ public class Preferences {
     public static boolean logoutUser(CogSurver cogSurver, Editor editor) {
         if (DEBUG) Log.d(Preferences.TAG, "Trying to log out.");
         // TODO: If we re-implement oAuth, we'll have to call clearAllCrendentials here.
-        cogSurver.setCredentials(null, null);
+        cogSurver.clearAllCredentials();
         return editor.clear().commit();
     }
 

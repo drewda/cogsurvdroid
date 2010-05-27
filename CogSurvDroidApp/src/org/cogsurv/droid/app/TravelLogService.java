@@ -3,32 +3,37 @@
  */
 package org.cogsurv.droid.app;
 
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.cogsurv.cogsurver.types.TravelFix;
+import org.cogsurv.droid.CogSurvDroid;
 import org.cogsurv.droid.CogSurvDroidSettings;
 
-import edu.ucsb.cogsurv.Constants;
-
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
+import android.util.Log;
 
 /**
  * @author Drew Dara-Abrams
  * 
  */
-public class TravelLogService extends Service {
+public class TravelLogService extends Service { 
   private Timer                 timer       = new Timer();
 
   private PowerManager          pm;
-  private PowerManager.WakeLock wl;
+  private WakeLock              wl;
 
   private LocationManager       locationManager;
   private Location              gpsFix;
@@ -47,18 +52,30 @@ public class TravelLogService extends Service {
         Bundle arg2) {
     }
   };
+  private BroadcastReceiver mLoggedOutReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        stopSelf();
+    }
+};
 
   /**
      * 
      */
   @Override
   public void onCreate() {
+    registerReceiver(mLoggedOutReceiver, new IntentFilter(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
+    
     locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, CogSurvDroidSettings.TRAVEL_LOG_INTERVAL, 0, gpsListener);
+    
+    pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+    wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TravelLogServiceLock");
   }
   
   @Override
   public void onStart(Intent intent, int startId) {
+    Log.d("CogSurv", "TravelLogService.onStart");
     super.onStart(intent, startId);
     
     timer.scheduleAtFixedRate(
@@ -68,14 +85,9 @@ public class TravelLogService extends Service {
           }
         },
         0,
-        Constants.LOG_INTERVAL);
-    
-    settings = getSharedPreferences(Constants.PREFERENCES, 0);
-    current_person_id = settings.getInt(Constants.CURRENT_PERSON_SERVER_ID_PREF, -1);
-    current_travel_log_id = settings.getInt(Constants.CURRENT_TRAVEL_LOG_SERVER_ID_PREF, -1);
+        CogSurvDroidSettings.TRAVEL_LOG_INTERVAL);
     
     pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-    wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TravelLogServiceLock");
     wl.acquire();
   }
   
@@ -84,11 +96,25 @@ public class TravelLogService extends Service {
     timer.cancel();
     locationManager.removeUpdates(gpsListener);
     wl.release();
+    unregisterReceiver(mLoggedOutReceiver);
   }
 
   @Override
   public IBinder onBind(Intent intent) {
     return null;
+  }
+  
+  private void processGPS() {
+    Log.d("CogSurv", "TravelLogService.processGPS");
+    TravelFix travelFix = new TravelFix();
+    travelFix.setDatetime(new Date());
+    travelFix.setLatitude(gpsFix.getLatitude());
+    travelFix.setLongitude(gpsFix.getLongitude());
+    travelFix.setAccuracy(gpsFix.getAccuracy());
+    travelFix.setAltitude(gpsFix.getAltitude());
+    travelFix.setSpeed(gpsFix.getSpeed());
+    
+    ((CogSurvDroid) getApplication()).recordTravelFix(travelFix);
   }
 
 }

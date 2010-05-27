@@ -1,5 +1,9 @@
 package org.cogsurv.cogsurver.content;
 
+
+import org.cogsurv.cogsurver.types.Landmark;
+import org.cogsurv.cogsurver.types.TravelFix;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -524,6 +528,96 @@ public class CogSurverProvider extends ContentProvider {
     }
     getContext().getContentResolver().notifyChange(url, null, true);
     return count;
+  }
+  
+  /* LANDMARK */
+  public static ContentValues createContentValues(Landmark landmark) {
+    ContentValues values = new ContentValues();
+    // Values id < 0 indicate no id is available:
+    if (landmark.getLocalId() >= 0) {
+      values.put(LandmarksColumns._ID, landmark.getLocalId());
+    }
+    values.put(LandmarksColumns.SERVER_ID, landmark.getServerId());
+    values.put(LandmarksColumns.USER_ID, landmark.getUserId());
+    values.put(LandmarksColumns.FOURSQUARE_VENUE_ID, landmark.getFoursquareVenueId());
+    values.put(LandmarksColumns.NAME, landmark.getName());
+    values.put(LandmarksColumns.ADDRESS, landmark.getAddress());
+    values.put(LandmarksColumns.CITY, landmark.getCity());
+    values.put(LandmarksColumns.STATE, landmark.getState());
+    values.put(LandmarksColumns.ZIP, landmark.getZip());
+    values.put(LandmarksColumns.LATITUDE, landmark.getLatitude());
+    values.put(LandmarksColumns.LONGITUDE, landmark.getLongitude());
+    return values;
+  }
+  
+  public static Landmark createLandmark(Cursor cursor) {
+    int idxLocalId = cursor.getColumnIndexOrThrow(LandmarksColumns._ID);
+    int idxServerId = cursor.getColumnIndexOrThrow(LandmarksColumns.SERVER_ID);
+    int idxUserId = cursor.getColumnIndexOrThrow(LandmarksColumns.USER_ID);
+    int idxFoursquareVenueId = cursor.getColumnIndexOrThrow(LandmarksColumns.FOURSQUARE_VENUE_ID);
+    int idxName = cursor.getColumnIndexOrThrow(LandmarksColumns.NAME);
+    int idxAddress = cursor.getColumnIndexOrThrow(LandmarksColumns.ADDRESS);
+    int idxCity = cursor.getColumnIndexOrThrow(LandmarksColumns.CITY);
+    int idxState = cursor.getColumnIndexOrThrow(LandmarksColumns.STATE);
+    int idxZip = cursor.getColumnIndexOrThrow(LandmarksColumns.ZIP);
+    int idxLatitude = cursor.getColumnIndexOrThrow(LandmarksColumns.LATITUDE);
+    int idxLongitude = cursor.getColumnIndexOrThrow(LandmarksColumns.LONGITUDE);
+
+    Landmark landmark = new Landmark();
+    if (!cursor.isNull(idxLocalId)) {
+      landmark.setLocalId(cursor.getInt(idxLocalId));
+    }
+    if (!cursor.isNull(idxServerId)) {
+      landmark.setServerId(cursor.getInt(idxServerId));
+    }
+    if (!cursor.isNull(idxUserId)) {
+      landmark.setUserId(cursor.getInt(idxUserId));
+    }
+    if (!cursor.isNull(idxFoursquareVenueId)) {
+      landmark.setFoursquareVenueId(cursor.getString(idxFoursquareVenueId));
+    }
+    if (!cursor.isNull(idxName)) {
+      landmark.setName(cursor.getString(idxName));
+    }
+    if (!cursor.isNull(idxAddress)) {
+      landmark.setAddress(cursor.getString(idxAddress));
+    }
+    if (!cursor.isNull(idxCity)) {
+      landmark.setCity(cursor.getString(idxCity));
+    }
+    if (!cursor.isNull(idxState)) {
+      landmark.setState(cursor.getString(idxState));
+    }
+    if (!cursor.isNull(idxZip)) {
+      landmark.setZip(cursor.getString(idxZip));
+    }
+    if (!cursor.isNull(idxLatitude)) {
+      landmark.setLatitude(1. * cursor.getInt(idxLatitude) / 1E6);
+    }
+    if (!cursor.isNull(idxLongitude)) {
+      landmark.setLongitude(1. * cursor.getInt(idxLongitude) / 1E6);
+    }
+    return landmark;
+  }
+  
+  /* TRAVEL FIX */
+  public static ContentValues createContentValues(TravelFix travelFix) {
+    Log.d("CogSurv", "CogSurverProviderUtils.createContentValues(travelFix)");
+    ContentValues values = new ContentValues();
+    // Values id < 0 indicate no id is available:
+    if (travelFix.getLocalId() >= 0) {
+      values.put(TravelFixesColumns._ID, travelFix.getLocalId());
+    }
+    values.put(TravelFixesColumns.SERVER_ID, travelFix.getServerId());
+    values.put(TravelFixesColumns.USER_ID, travelFix.getUserId());    values.put(TravelFixesColumns.LATITUDE, travelFix.getLatitude());
+    values.put(TravelFixesColumns.LONGITUDE, travelFix.getLongitude());
+    values.put(TravelFixesColumns.ALTITUDE, travelFix.getAltitude());
+    values.put(TravelFixesColumns.SPEED, travelFix.getSpeed());
+    values.put(TravelFixesColumns.ACCURACY, travelFix.getAccuracy());
+    values.put(TravelFixesColumns.POSITIONING_METHOD, travelFix.getPositioningMethod());
+    values.put(TravelFixesColumns.TRAVEL_MODE, travelFix.getTravelMode());
+    values.put(TravelFixesColumns.TIME, travelFix.getDatetime().getTime());
+    return values;
   }
 
 }
