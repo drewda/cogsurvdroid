@@ -40,7 +40,7 @@ public class LandmarkVisitSelect extends ListActivity {
     registerReceiver(mLoggedOutReceiver, new IntentFilter(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
     
     // query for person's landmarks
-    landmarksCursor = ((CogSurvDroid) getApplication()).readLandmarks(true);
+    landmarksCursor = ((CogSurvDroid) getApplication()).readLandmarks(false);
 
     SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, // Context.
         android.R.layout.simple_list_item_1, // Specify the row template to use
