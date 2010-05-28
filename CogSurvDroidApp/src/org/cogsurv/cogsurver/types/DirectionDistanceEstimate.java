@@ -8,8 +8,8 @@ public class DirectionDistanceEstimate implements CogSurvType {
     private int mUserId;
     private int mLandmarkVisitId;
     private Date mDatetime;
-    private float mDirectionEstimate;
-    private float mDistanceEstimate;
+    private double mDirectionEstimate;
+    private double mDistanceEstimate;
     private String mDistanceEstimateUnits;
     private int mStartLandmarkId;
     private int mTargetLandmarkId;
@@ -44,16 +44,16 @@ public class DirectionDistanceEstimate implements CogSurvType {
     public void setDatetime(Date mDatetime) {
         this.mDatetime = mDatetime;
     }
-    public float getDirectionEstimate() {
+    public double getDirectionEstimate() {
         return mDirectionEstimate;
     }
-    public void setDirectionEstimate(float mDirectionEstimate) {
+    public void setDirectionEstimate(double mDirectionEstimate) {
         this.mDirectionEstimate = mDirectionEstimate;
     }
-    public float getDistanceEstimate() {
+    public double getDistanceEstimate() {
         return mDistanceEstimate;
     }
-    public void setDistanceEstimate(float mDistanceEstimate) {
+    public void setDistanceEstimate(double mDistanceEstimate) {
         this.mDistanceEstimate = mDistanceEstimate;
     }
     public String getDistanceEstimateUnits() {

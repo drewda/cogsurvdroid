@@ -88,11 +88,11 @@ public class CogSurver {
     return mCogSurvV1.createDirectionDistanceEstimate(directionDistanceEstimate);
   }
 
-  public DirectionDistanceEstimate updateDirectionDistanceEstimate(
+  /*public DirectionDistanceEstimate updateDirectionDistanceEstimate(
       DirectionDistanceEstimate directionDistanceEstimate) throws CogSurvException,
       CogSurvCredentialsException, CogSurvError, IOException {
     return mCogSurvV1.updateDirectionDistanceEstimate(directionDistanceEstimate);
-  }
+  }*/
 
   public static final CogSurverHttpApiV1 createHttpApi(String domain,
       String clientVersion) {

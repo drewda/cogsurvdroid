@@ -28,6 +28,7 @@ import org.cogsurv.cogsurver.http.HttpApiWithBasicAuth;
 import android.util.Log;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,6 +52,8 @@ class CogSurverHttpApiV1 {
     private final String mApiBaseUrl;
     private final AuthScope mAuthScope;
 
+    SimpleDateFormat iso8601DatetimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz");
+    
     public CogSurverHttpApiV1(String domain, String clientVersion) {
         mApiBaseUrl = "http://" + domain + "/api";
         mAuthScope = new AuthScope(domain, 80);
@@ -86,14 +89,14 @@ class CogSurverHttpApiV1 {
     Landmark createLandmark(Landmark landmark)
             throws CogSurvException, CogSurvCredentialsException, CogSurvError, IOException {
         HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_LANDMARKS), 
-                new BasicNameValuePair("foursquareVenueId", landmark.getFoursquareVenueId()),
-                new BasicNameValuePair("name", landmark.getName()),
-                new BasicNameValuePair("address", landmark.getAddress()),
-                new BasicNameValuePair("city", landmark.getCity()),
-                new BasicNameValuePair("state", landmark.getState()),
-                new BasicNameValuePair("zip", landmark.getZip()),
-                new BasicNameValuePair("latitude", String.valueOf(landmark.getLatitude())),
-                new BasicNameValuePair("longitude", String.valueOf(landmark.getLongitude()))
+                new BasicNameValuePair("landmark[foursquare-venue-id]", landmark.getFoursquareVenueId()),
+                new BasicNameValuePair("landmark[name]", landmark.getName()),
+                new BasicNameValuePair("landmark[address]", landmark.getAddress()),
+                new BasicNameValuePair("landmark[city]", landmark.getCity()),
+                new BasicNameValuePair("landmark[state]", landmark.getState()),
+                new BasicNameValuePair("landmark[zip]", landmark.getZip()),
+                new BasicNameValuePair("landmark[latitude]", String.valueOf(landmark.getLatitude())),
+                new BasicNameValuePair("landmark[longitude]", String.valueOf(landmark.getLongitude()))
         );
         Landmark returnLandmark = (Landmark) mHttpApi.doHttpRequest(httpPost, new LandmarkParser());
         returnLandmark.setLocalId(landmark.getLocalId());
@@ -116,31 +119,31 @@ class CogSurverHttpApiV1 {
         new BasicNameValuePair("travel_fix[speed]", String.valueOf(travelFix.getSpeed())),
         new BasicNameValuePair("travel_fix[accuracy]", String.valueOf(travelFix.getAccuracy())), 
         new BasicNameValuePair("travel_fix[positioning_method]", travelFix.getPositioningMethod()), 
-        new BasicNameValuePair("travel_fix[travel-mode]", travelFix.getTravelMode()), 
-        new BasicNameValuePair("travel_fix[datetime]", String.valueOf(travelFix.getDatetime().getTime())));
+        new BasicNameValuePair("travel_fix[travel_mode]", travelFix.getTravelMode()), 
+        new BasicNameValuePair("travel_fix[datetime]", iso8601DatetimeFormat.format(travelFix.getDatetime())));
     return (TravelFix) mHttpApi.doHttpRequest(httpPost, new TravelFixParser());
   }
     
-    LandmarkVisit createLandmarkVisit(LandmarkVisit landmarkVisit) throws CogSurvException,
-            CogSurvCredentialsException, CogSurvError, IOException {
-        HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_LANDMARK_VISITS),
-                new BasicNameValuePair("landmark-id", String.valueOf(landmarkVisit.getLandmarkId())));
-        LandmarkVisit returnLandmarkVisit = (LandmarkVisit) mHttpApi.doHttpRequest(httpPost,
-                new LandmarkVisitParser());
-        returnLandmarkVisit.setLocalId(landmarkVisit.getLocalId());
-        return returnLandmarkVisit;
+  LandmarkVisit createLandmarkVisit(LandmarkVisit landmarkVisit) throws CogSurvException,
+      CogSurvCredentialsException, CogSurvError, IOException {
+    HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_LANDMARK_VISITS),
+        new BasicNameValuePair("landmark_visit[landmark_id]", String.valueOf(landmarkVisit.getLandmarkId())), 
+        new BasicNameValuePair("landmark_visit[datetime]", iso8601DatetimeFormat.format(landmarkVisit.getDatetime())));
+    LandmarkVisit returnLandmarkVisit = (LandmarkVisit) mHttpApi.doHttpRequest(httpPost, new LandmarkVisitParser());
+    returnLandmarkVisit.setLocalId(landmarkVisit.getLocalId());
+    return returnLandmarkVisit;
     }
     
     DirectionDistanceEstimate createDirectionDistanceEstimate(DirectionDistanceEstimate directionDistanceEstimate) 
             throws CogSurvException, CogSurvCredentialsException, CogSurvError, IOException {
         HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_DIRECTION_DISTANCE_ESTIMATES),
-                new BasicNameValuePair("landmark-visit-id", String.valueOf(directionDistanceEstimate.getLandmarkVisitId())),
-                new BasicNameValuePair("datetime", String.valueOf(directionDistanceEstimate.getDatetime().getTime())),
-                new BasicNameValuePair("direction-estimate", String.valueOf(directionDistanceEstimate.getDirectionEstimate())),
-                new BasicNameValuePair("distance-estimate", String.valueOf(directionDistanceEstimate.getDistanceEstimate())),
-                new BasicNameValuePair("distance-estimate-units", directionDistanceEstimate.getDistanceEstimateUnits()),
-                new BasicNameValuePair("start-landmark-id", String.valueOf(directionDistanceEstimate.getStartLandmarkId())),
-                new BasicNameValuePair("target-landmark-id", String.valueOf(directionDistanceEstimate.getTargetLandmarkId()))
+                new BasicNameValuePair("direction_distance_estimate[landmark_visit_id]", String.valueOf(directionDistanceEstimate.getLandmarkVisitId())),
+                new BasicNameValuePair("direction_distance_estimate[datetime]", iso8601DatetimeFormat.format(directionDistanceEstimate.getDatetime())),
+                new BasicNameValuePair("direction_distance_estimate[direction_estimate]", String.valueOf(directionDistanceEstimate.getDirectionEstimate())),
+                new BasicNameValuePair("direction_distance_estimate[distance_estimate]", String.valueOf(directionDistanceEstimate.getDistanceEstimate())),
+                new BasicNameValuePair("direction_distance_estimate[distance_estimate_units]", directionDistanceEstimate.getDistanceEstimateUnits()),
+                new BasicNameValuePair("direction_distance_estimate[start_landmark_id]", String.valueOf(directionDistanceEstimate.getStartLandmarkId())),
+                new BasicNameValuePair("direction_distance_estimate[target_landmark_id]", String.valueOf(directionDistanceEstimate.getTargetLandmarkId()))
         );
         DirectionDistanceEstimate returnDirectionDistanceEstimate = (DirectionDistanceEstimate) mHttpApi
                 .doHttpRequest(httpPost, new DirectionDistanceEstimateParser());
@@ -148,22 +151,22 @@ class CogSurverHttpApiV1 {
         return returnDirectionDistanceEstimate;
     }
     
-    DirectionDistanceEstimate updateDirectionDistanceEstimate(DirectionDistanceEstimate directionDistanceEstimate) 
+    /*DirectionDistanceEstimate updateDirectionDistanceEstimate(DirectionDistanceEstimate directionDistanceEstimate) 
             throws CogSurvException, CogSurvCredentialsException, CogSurvError, IOException {
       HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_DIRECTION_DISTANCE_ESTIMATES) + '/' + directionDistanceEstimate.getServerId(),
-                new BasicNameValuePair("landmark-visit-id", String.valueOf(directionDistanceEstimate.getLandmarkVisitId())),
-                new BasicNameValuePair("datetime", String.valueOf(directionDistanceEstimate.getDatetime().getTime())),
-                new BasicNameValuePair("direction-estimate", String.valueOf(directionDistanceEstimate.getDirectionEstimate())),
-                new BasicNameValuePair("distance-estimate", String.valueOf(directionDistanceEstimate.getDistanceEstimate())),
-                new BasicNameValuePair("distance-estimate-units", directionDistanceEstimate.getDistanceEstimateUnits()),
-                new BasicNameValuePair("start-landmark-id", String.valueOf(directionDistanceEstimate.getStartLandmarkId())),
-                new BasicNameValuePair("target-landmark-id", String.valueOf(directionDistanceEstimate.getTargetLandmarkId()))
+                new BasicNameValuePair("direction_distance_estimate[landmark_visit_id]", String.valueOf(directionDistanceEstimate.getLandmarkVisitId())),
+                new BasicNameValuePair("direction_distance_estimate[datetime]", String.valueOf(directionDistanceEstimate.getDatetime())),
+                new BasicNameValuePair("direction_distance_estimate[direction_estimate]", String.valueOf(directionDistanceEstimate.getDirectionEstimate())),
+                new BasicNameValuePair("direction_distance_estimate[distance_estimate]", String.valueOf(directionDistanceEstimate.getDistanceEstimate())),
+                new BasicNameValuePair("direction_distance_estimate[distance_estimate_units]", directionDistanceEstimate.getDistanceEstimateUnits()),
+                new BasicNameValuePair("direction_distance_estimate[start_landmark_id]", String.valueOf(directionDistanceEstimate.getStartLandmarkId())),
+                new BasicNameValuePair("direction_distance_estimate[target_landmark_id]", String.valueOf(directionDistanceEstimate.getTargetLandmarkId()))
         );
         DirectionDistanceEstimate returnDirectionDistanceEstimate = (DirectionDistanceEstimate) mHttpApi
                 .doHttpRequest(httpPost, new DirectionDistanceEstimateParser());
         returnDirectionDistanceEstimate.setLocalId(directionDistanceEstimate.getLocalId());
         return returnDirectionDistanceEstimate;
-    }
+    }*/
 
     private String fullUrl(String url) {
         return mApiBaseUrl + url;

@@ -13,8 +13,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnClickListener{
     public static final String TAG = "MainActivity";
     public static final boolean DEBUG = CogSurvDroidSettings.DEBUG;
 
@@ -46,7 +48,8 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.main_activity);
         
-        // TODO: sometime we need to load landmarks
+        View landmarkVisitButton = this.findViewById(R.id.landmark_visit_button);
+        landmarkVisitButton.setOnClickListener(this);
     }
 
     @Override
@@ -147,5 +150,16 @@ public class MainActivity extends Activity {
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    public void onClick(View v) {
+      switch (v.getId()) {
+      case R.id.landmark_visit_button:
+        Log.v("CogSurv", "landmark_visit_button clicked");
+        Intent i = new Intent(this, LandmarkVisitSelect.class);
+        startActivity(i);
+        break;
+      }
     }
 }

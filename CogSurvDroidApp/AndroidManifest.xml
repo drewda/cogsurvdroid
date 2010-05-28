@@ -25,6 +25,12 @@
 		<activity
 			android:name=".LoginActivity"
 			android:launchMode="singleInstance" />
+		<activity
+			android:name=".LandmarkVisitSelect"
+			android:launchMode="singleInstance" />
+		<activity
+			android:name=".LandmarkVisitEstimates"
+			android:launchMode="singleInstance" />
 		<service
 			android:name=".app.TravelLogService" />
 		<provider

@@ -10,6 +10,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -28,10 +29,17 @@ import java.util.logging.Logger;
 
 import org.cogsurv.cogsurver.CogSurver;
 import org.cogsurv.cogsurver.content.CogSurverProvider;
+import org.cogsurv.cogsurver.content.DirectionDistanceEstimatesColumns;
+import org.cogsurv.cogsurver.content.LandmarkVisitsColumns;
+import org.cogsurv.cogsurver.content.LandmarksColumns;
 import org.cogsurv.cogsurver.content.TravelFixesColumns;
 import org.cogsurv.cogsurver.error.CogSurvCredentialsException;
 import org.cogsurv.cogsurver.error.CogSurvError;
 import org.cogsurv.cogsurver.error.CogSurvException;
+import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
+import org.cogsurv.cogsurver.types.Group;
+import org.cogsurv.cogsurver.types.Landmark;
+import org.cogsurv.cogsurver.types.LandmarkVisit;
 import org.cogsurv.cogsurver.types.TravelFix;
 import org.cogsurv.cogsurver.types.User;
 import org.cogsurv.droid.app.TravelLogService;
@@ -41,7 +49,7 @@ import org.cogsurv.droid.preferences.Preferences;
 import org.cogsurv.droid.util.JavaLoggingHandler;
 
 public class CogSurvDroid extends Application {
-    private static final String TAG = "CogSurvDroid";
+    public static final String TAG = "CogSurvDroid";
     private static final boolean DEBUG = CogSurvDroidSettings.DEBUG;
     static {
         Logger.getLogger("org.cogsurv.droid").addHandler(new JavaLoggingHandler());
@@ -63,6 +71,8 @@ public class CogSurvDroid extends Application {
     private CogSurver mCogSurver;
 
     private BestLocationListener mBestLocationListener = new BestLocationListener();
+    
+    public Group<Landmark> mEstimatesTargetSet;
 
     @Override
     public void onCreate() {
@@ -264,7 +274,7 @@ public class CogSurvDroid extends Application {
     /* DATA HANDLERS */
     /* TRAVEL FIX */
     public boolean recordTravelFix(TravelFix travelFix) {
-      Log.d("CogSurv", "CogSurverProviderUtils.recordTravelFix");
+      Log.d("CogSurv", "CogSurvDroid.recordTravelFix");
       // if connected to Internet, post to server
       try {
         travelFix = mCogSurver.createTravelFix(travelFix);
@@ -279,6 +289,7 @@ public class CogSurvDroid extends Application {
       }
       
       // in any case, record to DB
+      travelFix.setUserId(Integer.valueOf(getUserId()));
       Uri uri = getContentResolver().insert(TravelFixesColumns.CONTENT_URI,
           CogSurverProvider.createContentValues(travelFix));
       long localId = Long.parseLong(uri.getLastPathSegment());
@@ -287,5 +298,90 @@ public class CogSurvDroid extends Application {
       return true;
     }
     
-    /* */
+    /* LANDMARK */
+    public Cursor readLandmarks(boolean hitServer) {
+      Log.v("CogSurv", "CogSurvDroid.readLandmarks(hitServer=" + hitServer + ")");
+      
+      if (hitServer) {
+        Log.v("CogSurv", "CogSurvDroid.readLandmarks hitting server");
+        Group<Landmark> landmarks = new Group<Landmark>();
+        
+        try {
+          landmarks = mCogSurver.readLandmarks();
+        } catch (CogSurvCredentialsException e) {
+          e.printStackTrace();
+        } catch (CogSurvError e) {
+          e.printStackTrace();
+        } catch (CogSurvException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        
+        if (landmarks.size() > 0) {
+          for (Landmark landmark : landmarks) { 
+            int rowsDeleted = getContentResolver().delete(LandmarksColumns.CONTENT_URI, LandmarksColumns.SERVER_ID + "=" + landmark.getServerId(), null);
+            Log.v("CogSurv", "CogSurvDroid.readLandmarks(hitServer=true) rows deleted: " + rowsDeleted);
+            Uri uri = getContentResolver().insert(LandmarksColumns.CONTENT_URI, CogSurverProvider.createContentValues(landmark));
+            Log.v("CogSurv", "CogSurvDroid.readLandmarks(hitServer=true) row inserted: " + uri.toString());
+          }
+        }
+      }
+      
+      return getContentResolver().query(LandmarksColumns.CONTENT_URI, null, LandmarksColumns.USER_ID + "=" + getUserId(), null, null);
+    }
+    
+    /* LANDMARK VISIT */
+    public LandmarkVisit recordLandmarkVisit(LandmarkVisit landmarkVisit) {
+      Log.d("CogSurv", "CogSurvDroid.recordLandmarkVisit");
+      // if connected to Internet, post to server
+      try {
+        landmarkVisit = mCogSurver.createLandmarkVisit(landmarkVisit);
+      } catch (CogSurvCredentialsException e) {
+        e.printStackTrace();
+      } catch (CogSurvError e) {
+        e.printStackTrace();
+      } catch (CogSurvException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      
+      // in any case, record to DB
+      landmarkVisit.setUserId(Integer.valueOf(getUserId()));
+      Uri uri = getContentResolver().insert(LandmarkVisitsColumns.CONTENT_URI,
+          CogSurverProvider.createContentValues(landmarkVisit));
+      long localId = Long.parseLong(uri.getLastPathSegment());
+      Log.d("CogSurv", "recordLandmarkVisit: insert into ContentProvider: localId = " + localId);
+      landmarkVisit.setLocalId((int)localId);
+      
+      return landmarkVisit;
+    }
+    
+    /* DIRECTION DISTANCE ESTIMATE */
+    public DirectionDistanceEstimate recordDirectionDistanceEstimate(DirectionDistanceEstimate directionDistanceEstimate) {
+      Log.d("CogSurv", "CogSurvDroid.recordDirectionDistanceEstimate");
+      // if connected to Internet, post to server
+      try {
+        directionDistanceEstimate = mCogSurver.createDirectionDistanceEstimate(directionDistanceEstimate);
+      } catch (CogSurvCredentialsException e) {
+        e.printStackTrace();
+      } catch (CogSurvError e) {
+        e.printStackTrace();
+      } catch (CogSurvException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      
+      // in any case, record to DB
+      directionDistanceEstimate.setUserId(Integer.valueOf(getUserId()));
+      Uri uri = getContentResolver().insert(DirectionDistanceEstimatesColumns.CONTENT_URI,
+          CogSurverProvider.createContentValues(directionDistanceEstimate));
+      long localId = Long.parseLong(uri.getLastPathSegment());
+      Log.d("CogSurv", "recordDirectionDistanceEstimate: insert into ContentProvider: localId = " + localId);
+      directionDistanceEstimate.setLocalId((int)localId);
+
+      return directionDistanceEstimate;
+    }
 }

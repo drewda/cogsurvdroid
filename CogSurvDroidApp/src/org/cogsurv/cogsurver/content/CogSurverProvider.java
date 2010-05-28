@@ -1,7 +1,11 @@
 package org.cogsurv.cogsurver.content;
 
 
+import java.text.SimpleDateFormat;
+
+import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
 import org.cogsurv.cogsurver.types.Landmark;
+import org.cogsurv.cogsurver.types.LandmarkVisit;
 import org.cogsurv.cogsurver.types.TravelFix;
 
 import android.content.ContentProvider;
@@ -49,6 +53,8 @@ public class CogSurverProvider extends ContentProvider {
   private static final String REGIONS_TABLE = "regions";
   
   public static final String TAG = "CogSurverProvider";
+  
+  SimpleDateFormat iso8601DatetimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz");
 
   /**
    * Helper which creates or upgrades the database if necessary.
@@ -358,7 +364,7 @@ public class CogSurverProvider extends ContentProvider {
       throw new IllegalArgumentException(
           "Required fields: userId, landmarkVisitId, startLandmarkId, targetLandmarkId, directionEstimate, distanceEstimate, distanceEstimateUnits, time.");
     }
-    long rowId = db.insert(TRAVEL_FIXES_TABLE, TravelFixesColumns._ID, values);
+    long rowId = db.insert(DIRECTION_DISTANCE_ESTIMATES_TABLE, DirectionDistanceEstimatesColumns._ID, values);
     if (rowId > 0) {
       Uri uri = ContentUris.appendId(
           TravelFixesColumns.CONTENT_URI.buildUpon(), rowId).build();
@@ -415,7 +421,7 @@ public class CogSurverProvider extends ContentProvider {
       qb.setTables(TRAVEL_FIXES_TABLE);
       qb.appendWhere("_id=" + url.getPathSegments().get(1));
     } else if (match == LANDMARKS) {
-      qb.setTables(TRAVEL_FIXES_TABLE);
+      qb.setTables(LANDMARKS_TABLE);
       if (sort != null) {
         sortOrder = sort;
       } else {
@@ -617,6 +623,39 @@ public class CogSurverProvider extends ContentProvider {
     values.put(TravelFixesColumns.POSITIONING_METHOD, travelFix.getPositioningMethod());
     values.put(TravelFixesColumns.TRAVEL_MODE, travelFix.getTravelMode());
     values.put(TravelFixesColumns.TIME, travelFix.getDatetime().getTime());
+    return values;
+  }
+  
+  /* LANDMARK VISIT */
+  public static ContentValues createContentValues(LandmarkVisit landmarkVisit) {
+    ContentValues values = new ContentValues();
+    // Values id < 0 indicate no id is available:
+    if (landmarkVisit.getLocalId() >= 0) {
+      values.put(LandmarksColumns._ID, landmarkVisit.getLocalId());
+    }
+    values.put(LandmarkVisitsColumns.SERVER_ID, landmarkVisit.getServerId());
+    values.put(LandmarkVisitsColumns.USER_ID, landmarkVisit.getUserId());
+    values.put(LandmarkVisitsColumns.LANDMARK_ID, landmarkVisit.getLandmarkId());
+    values.put(LandmarkVisitsColumns.TIME, landmarkVisit.getDatetime().getTime());
+    return values;
+  }
+  
+  /* DIRECTION DISTANCE ESTIMATE */
+  public static ContentValues createContentValues(DirectionDistanceEstimate directionDistanceEstimate) {
+    ContentValues values = new ContentValues();
+    // Values id < 0 indicate no id is available:
+    if (directionDistanceEstimate.getLocalId() >= 0) {
+      values.put(DirectionDistanceEstimatesColumns._ID, directionDistanceEstimate.getLocalId());
+    }
+    values.put(DirectionDistanceEstimatesColumns.SERVER_ID, directionDistanceEstimate.getServerId());
+    values.put(DirectionDistanceEstimatesColumns.USER_ID, directionDistanceEstimate.getUserId());
+    values.put(DirectionDistanceEstimatesColumns.LANDMARK_VISIT_ID, directionDistanceEstimate.getLandmarkVisitId());
+    values.put(DirectionDistanceEstimatesColumns.TIME, directionDistanceEstimate.getDatetime().getTime());
+    values.put(DirectionDistanceEstimatesColumns.DIRECTION_ESTIMATE, directionDistanceEstimate.getDirectionEstimate());
+    values.put(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE, directionDistanceEstimate.getDirectionEstimate());
+    values.put(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE_UNITS, directionDistanceEstimate.getDistanceEstimateUnits());
+    values.put(DirectionDistanceEstimatesColumns.START_LANDMARK_ID, directionDistanceEstimate.getStartLandmarkId());
+    values.put(DirectionDistanceEstimatesColumns.TARGET_LANDMARK_ID, directionDistanceEstimate.getTargetLandmarkId());
     return values;
   }
 
