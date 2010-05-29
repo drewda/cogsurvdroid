@@ -4,6 +4,7 @@
   <string name="menu_switch_user">Switch User</string>
   <string name="menu_sync">Sync</string>
   <string name="menu_shutdown">Shutdown</string>
+  <string name="login_get_started">Log In</string>
   <string name="login_get_started_more">Got a Cog Surv account? We just need your e-mail address and password</string>
   <string name="email_address">E-mail address</string>
   <string name="login_dialog_message">Please wait while logging into Cognitive Surveyor...</string>
@@ -49,10 +50,6 @@
   <string name="friendsactivity_title_searching">Foursquare - Searching for Friends</string>
   <string name="last_seen_header">Last Seen</string>
   <string name="loading">Loading...</string>
-
-  <string name="login_get_started">Get Started</string>
-
-
   <string name="map_label">Map</string>
   <string name="mayor_header">Mayor</string>
   <string name="myinfo_label">My Info</string>
