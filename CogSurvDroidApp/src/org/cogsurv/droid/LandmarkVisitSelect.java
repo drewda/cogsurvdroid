@@ -83,6 +83,11 @@ public class LandmarkVisitSelect extends ListActivity {
       }
     }
     Collections.shuffle(estimatesTargetSet);
+    // add point-to-north command
+    landmark = new Landmark();
+    landmark.setName(CogSurvDroidSettings.POINT_TO_NORTH_COMMAND);
+    estimatesTargetSet.add(landmark);
+    // set the estimatesTargetSet, which LandmarkVisitEstimates will pick up
     ((CogSurvDroid) getApplication()).mEstimatesTargetSet = estimatesTargetSet;
 
     // create landmarkVisit

@@ -4,9 +4,6 @@
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
 >
-
-
-
 	<LinearLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		android:orientation="vertical"
@@ -34,10 +31,12 @@
 		</RelativeLayout>
 
 		<TextView
+			android:id="@+id/main_prompt"
 			android:layout_height="wrap_content"
-			android:text="Please estimate distance and direction to:"
+			android:text="@string/direction_distance_estimate_prompt"
 			android:layout_width="fill_parent"
-			android:gravity="center" android:padding="5dip"/>
+			android:gravity="center"
+			android:padding="5dip" />
 		<TextView
 			android:id="@+id/target_landmark_header"
 			android:layout_height="wrap_content"
@@ -53,12 +52,15 @@
 			android:gravity="center" android:text="__" />
 		-->
 		<TextView
+			android:id="@+id/distance_prompt"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:layout_gravity="center"
 			android:gravity="center"
-			android:text="Use the +/- buttons to enter distance." android:padding="5dip"/>
+			android:text="Use the +/- buttons to enter distance."
+			android:padding="5dip" />
 		<TableLayout
+			android:id="@+id/distance_entry"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="8dip"

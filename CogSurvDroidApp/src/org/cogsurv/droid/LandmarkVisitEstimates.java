@@ -2,10 +2,8 @@ package org.cogsurv.droid;
 
 import java.util.Date;
 
-import org.cogsurv.cogsurver.content.LandmarksColumns;
 import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
 import org.cogsurv.cogsurver.types.Landmark;
-import org.cogsurv.cogsurver.types.LandmarkVisit;
 import org.cogsurv.droid.util.NotificationsUtil;
 
 import android.app.Activity;
@@ -43,7 +41,7 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
   private String                    distanceUnits;
 
   private TextView                  targetLandmarkHeader;
-  /* private TextView targetLandmarkCity; */
+  //private TextView                targetLandmarkCity;
   private EditText                  distanceWholeNumberEditText;
   private EditText                  distanceTenthNumberEditText;
   private Spinner                   distanceUnitsSpinner;
@@ -129,7 +127,6 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 
     distanceWholeNumberEditText = (EditText) findViewById(R.id.distance_whole_number_edit_text);
     distanceTenthNumberEditText = (EditText) findViewById(R.id.distance_tenth_number_edit_text);
-
   }
 
   @Override
@@ -142,19 +139,27 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
   public void onClick(View v) {
     switch (v.getId()) {
     case R.id.record_estimates_button:
-      // (1) record this directionDistanceEstimate
-      Double distanceEstimate = distanceWholeNumber + (distanceTenthNumber * .1);
       directionDistanceEstimate = new DirectionDistanceEstimate();
-      directionDistanceEstimate.setStartLandmarkId(startLandmarkId);
-      directionDistanceEstimate.setTargetLandmarkId(currentTargetLandmark.getServerId());
-      directionDistanceEstimate.setDatetime(new Date());
-      directionDistanceEstimate.setDirectionEstimate(compassValues[0]);
-      directionDistanceEstimate.setDistanceEstimate(distanceEstimate);
-      directionDistanceEstimate.setDistanceEstimateUnits(distanceUnits);
-      directionDistanceEstimate.setLandmarkVisitId(landmarkVisitId);
-
+      /* point-to-north, which for now is always the last target */
+      if (currentTargetLandmark.getName() == CogSurvDroidSettings.POINT_TO_NORTH_COMMAND) {
+        directionDistanceEstimate.setStartLandmarkId(startLandmarkId);
+        directionDistanceEstimate.setDatetime(new Date());
+        directionDistanceEstimate.setDirectionEstimate(compassValues[0]);
+        directionDistanceEstimate.setLandmarkVisitId(landmarkVisitId);
+      }
+      /* a normal estimate-to-landmark */
+      else {
+        // (1) record this directionDistanceEstimate
+        Double distanceEstimate = distanceWholeNumber + (distanceTenthNumber * .1);
+        directionDistanceEstimate.setStartLandmarkId(startLandmarkId);
+        directionDistanceEstimate.setTargetLandmarkId(currentTargetLandmark.getServerId());
+        directionDistanceEstimate.setDatetime(new Date());
+        directionDistanceEstimate.setDirectionEstimate(compassValues[0]);
+        directionDistanceEstimate.setDistanceEstimate(distanceEstimate);
+        directionDistanceEstimate.setDistanceEstimateUnits(distanceUnits);
+        directionDistanceEstimate.setLandmarkVisitId(landmarkVisitId);
+      }
       new RecordDirectionDistanceEstimateAsyncTask().execute(directionDistanceEstimate);
-      
       // (2) go to the next target
       // will be handled in RecordDirectionDistanceEstimateAsyncTask.onPostExecute
       break;
@@ -249,19 +254,29 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
           Toast.makeText(LandmarkVisitEstimates.this, "Great guess! Please try another.", Toast.LENGTH_LONG).show();
 
           currentTargetLandmark = ((CogSurvDroid) getApplication()).mEstimatesTargetSet.get(0);
-          targetLandmarkHeader.setText(currentTargetLandmark.getName());
-          /*targetLandmarkCity.setText('(' + currentSurveyingTarget.getVenue().getCity() + ')');*/
-          distanceWholeNumber = 0;
-          distanceTenthNumber = 0;
-          distanceWholeNumberEditText.setText(String.valueOf(distanceWholeNumber));
-          distanceTenthNumberEditText.setText(String.valueOf(distanceTenthNumber));
-
-          /* findViewById(R.id.estimates_feedback).setVisibility(View.VISIBLE); */
-          /*
-           * Button doneSurveyingButton = (Button)
-           * findViewById(R.id.done_surveying_button);
-           */
-          /* doneSurveyingButton.setOnClickListener(this); */
+          /* point-to-north, which for now is always the last target */
+          if (currentTargetLandmark.getName() == CogSurvDroidSettings.POINT_TO_NORTH_COMMAND) {
+            ((TextView) findViewById(R.id.main_prompt)).setText(R.string.direction_estimate_prompt);
+            findViewById(R.id.distance_prompt).setVisibility(View.GONE);
+            findViewById(R.id.distance_entry).setVisibility(View.GONE);
+            targetLandmarkHeader.setText("north");
+          }
+          /* a normal estimate-to-landmark */
+          else {
+            targetLandmarkHeader.setText(currentTargetLandmark.getName());
+            /*targetLandmarkCity.setText('(' + currentSurveyingTarget.getVenue().getCity() + ')');*/
+            distanceWholeNumber = 0;
+            distanceTenthNumber = 0;
+            distanceWholeNumberEditText.setText(String.valueOf(distanceWholeNumber));
+            distanceTenthNumberEditText.setText(String.valueOf(distanceTenthNumber));
+  
+            /* findViewById(R.id.estimates_feedback).setVisibility(View.VISIBLE); */
+            /*
+             * Button doneSurveyingButton = (Button)
+             * findViewById(R.id.done_surveying_button);
+             */
+            /* doneSurveyingButton.setOnClickListener(this); */
+          }
         } else {
           Toast.makeText(LandmarkVisitEstimates.this, "Good work! You've done all the landmarks.", Toast.LENGTH_LONG).show();
           finish();

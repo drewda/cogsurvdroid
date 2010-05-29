@@ -349,18 +349,20 @@ public class CogSurverProvider extends ContentProvider {
     throw new SQLException("Failed to insert row into " + url);
   }
   
+  /* note that when pointing to north, we're not going to record targetLandmarkId,
+   * distanceEstimate, or distanceEstimateUnits */
   private Uri insertDirectionDistanceEstimate(Uri url, ContentValues values) {
     Log.d(CogSurverProvider.TAG, "CogSurverProvider.insertDirectionDistanceEstimate: " + values.toString());
     values.remove(DirectionDistanceEstimatesColumns._ID); // we don't want to specify the localId
     boolean hasUserId = values.containsKey(DirectionDistanceEstimatesColumns.USER_ID);
     boolean hasLandmarkVisitId = values.containsKey(DirectionDistanceEstimatesColumns.LANDMARK_VISIT_ID);
     boolean hasStartLandmarkId = values.containsKey(DirectionDistanceEstimatesColumns.START_LANDMARK_ID);
-    boolean hasTargetLandmarkId = values.containsKey(DirectionDistanceEstimatesColumns.TARGET_LANDMARK_ID);
+    //boolean hasTargetLandmarkId = values.containsKey(DirectionDistanceEstimatesColumns.TARGET_LANDMARK_ID);
     boolean hasDirectionEstimate = values.containsKey(DirectionDistanceEstimatesColumns.DIRECTION_ESTIMATE);
-    boolean hasDistanceEstimate = values.containsKey(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE);
-    boolean hasDistanceEstimateUnits = values.containsKey(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE_UNITS);
+    //boolean hasDistanceEstimate = values.containsKey(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE);
+    //boolean hasDistanceEstimateUnits = values.containsKey(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE_UNITS);
     boolean hasTime = values.containsKey(TravelFixesColumns.TIME);
-    if (!hasUserId || !hasLandmarkVisitId || !hasStartLandmarkId || !hasTargetLandmarkId || !hasDirectionEstimate || !hasDistanceEstimate || !hasDistanceEstimateUnits || !hasTime) {
+    if (!hasUserId || !hasLandmarkVisitId || !hasStartLandmarkId || !hasDirectionEstimate || !hasTime) {
       throw new IllegalArgumentException(
           "Required fields: userId, landmarkVisitId, startLandmarkId, targetLandmarkId, directionEstimate, distanceEstimate, distanceEstimateUnits, time.");
     }
