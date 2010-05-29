@@ -1,29 +1,6 @@
 package org.cogsurv.droid;
 
-import android.app.Application;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.database.Cursor;
-import android.location.Location;
-import android.location.LocationManager;
-import android.net.Uri;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
-import android.preference.PreferenceManager;
-import android.text.TextUtils;
-import android.util.Log;
-
 import java.io.IOException;
-import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,10 +20,28 @@ import org.cogsurv.cogsurver.types.LandmarkVisit;
 import org.cogsurv.cogsurver.types.TravelFix;
 import org.cogsurv.cogsurver.types.User;
 import org.cogsurv.droid.app.TravelLogService;
-import org.cogsurv.droid.error.LocationException;
-import org.cogsurv.droid.location.BestLocationListener;
 import org.cogsurv.droid.preferences.Preferences;
 import org.cogsurv.droid.util.JavaLoggingHandler;
+
+import android.app.Application;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
+import android.preference.PreferenceManager;
+import android.text.TextUtils;
+import android.util.Log;
 
 public class CogSurvDroid extends Application {
     public static final String TAG = "CogSurvDroid";
@@ -69,8 +64,6 @@ public class CogSurvDroid extends Application {
     private SharedPreferences mPrefs;
 
     private CogSurver mCogSurver;
-
-    private BestLocationListener mBestLocationListener = new BestLocationListener();
     
     public Group<Landmark> mEstimatesTargetSet;
 
@@ -116,41 +109,6 @@ public class CogSurvDroid extends Application {
         } else {
             return "";
         }
-    }
-
-    public BestLocationListener requestLocationUpdates(boolean gps) {
-        mBestLocationListener.register(
-                (LocationManager) getSystemService(Context.LOCATION_SERVICE), gps);
-        return mBestLocationListener;
-    }
-
-    public BestLocationListener requestLocationUpdates(Observer observer) {
-        mBestLocationListener.addObserver(observer);
-        mBestLocationListener.register(
-                (LocationManager) getSystemService(Context.LOCATION_SERVICE), true);
-        return mBestLocationListener;
-    }
-
-    public void removeLocationUpdates() {
-        mBestLocationListener
-                .unregister((LocationManager) getSystemService(Context.LOCATION_SERVICE));
-    }
-
-    public void removeLocationUpdates(Observer observer) {
-        mBestLocationListener.deleteObserver(observer);
-        this.removeLocationUpdates();
-    }
-
-    public Location getLastKnownLocation() {
-        return mBestLocationListener.getLastKnownLocation();
-    }
-
-    public Location getLastKnownLocationOrThrow() throws LocationException {
-        Location location = mBestLocationListener.getLastKnownLocation();
-        if (location == null) {
-            throw new LocationException();
-        }
-        return location;
     }
 
     public void requestStartService() {

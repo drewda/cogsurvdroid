@@ -69,13 +69,11 @@ public class LoginActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        ((CogSurvDroid) getApplication()).requestLocationUpdates(false);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        ((CogSurvDroid) getApplication()).removeLocationUpdates();
     }
 
     @Override
