@@ -63,6 +63,8 @@ public class MainActivity extends Activity implements OnClickListener {
     landmarkVisitButton = this.findViewById(R.id.landmark_visit_button);
     // we only want to enable the landmarkVisitButton after we've downloaded the
     // landmarks
+    /* TODO: move this to CogSurvDroid so that it doesn't happen each time we
+     * rotate the screen and re-run MainActivity.onCreate */ 
     landmarkVisitButton.setEnabled(false);
     landmarkVisitButton.setFocusable(false);
     landmarkVisitButton.setOnClickListener(this);
