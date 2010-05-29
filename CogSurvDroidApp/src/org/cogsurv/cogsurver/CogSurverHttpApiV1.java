@@ -1,5 +1,10 @@
 package org.cogsurv.cogsurver;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
@@ -11,6 +16,7 @@ import org.cogsurv.cogsurver.error.CogSurvError;
 import org.cogsurv.cogsurver.error.CogSurvException;
 import org.cogsurv.cogsurver.http.AbstractHttpApi;
 import org.cogsurv.cogsurver.http.HttpApi;
+import org.cogsurv.cogsurver.http.HttpApiWithBasicAuth;
 import org.cogsurv.cogsurver.parsers.DirectionDistanceEstimateParser;
 import org.cogsurv.cogsurver.parsers.GroupParser;
 import org.cogsurv.cogsurver.parsers.LandmarkParser;
@@ -23,14 +29,8 @@ import org.cogsurv.cogsurver.types.Landmark;
 import org.cogsurv.cogsurver.types.LandmarkVisit;
 import org.cogsurv.cogsurver.types.TravelFix;
 import org.cogsurv.cogsurver.types.User;
-import org.cogsurv.cogsurver.http.HttpApiWithBasicAuth;
 
 import android.util.Log;
-
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * based on code by Joe LaPenna (joe@joelapenna.com)
@@ -52,7 +52,7 @@ class CogSurverHttpApiV1 {
     private final String mApiBaseUrl;
     private final AuthScope mAuthScope;
 
-    SimpleDateFormat iso8601DatetimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz");
+    private SimpleDateFormat iso8601DatetimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz");
     
     public CogSurverHttpApiV1(String domain, String clientVersion) {
         mApiBaseUrl = "http://" + domain + "/api";
