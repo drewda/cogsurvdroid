@@ -66,45 +66,56 @@
 			android:layout_marginBottom="8dip"
 		>
 			<TableRow>
-				<Button
-					android:text="+"
-					android:id="@+id/distance_whole_number_plus_button" />
-				<TextView
-					android:text="" />
-				<Button
-					android:text="+"
-					android:id="@+id/distance_tenth_number_plus_button" />
+				<TableRow>
+					<Button
+						android:text="+"
+						android:id="@+id/distance_plus_ten_button"
+						android:layout_width="40dip" />
+					<Button
+						android:text="+"
+						android:id="@+id/distance_plus_one_button"
+						android:layout_width="40dip" />
+					<Button
+						android:text="+"
+						android:id="@+id/distance_plus_tenth_button"
+						android:layout_width="40dip" />
+					<Button
+						android:text="+"
+						android:id="@+id/distance_plus_hundredth_button"
+						android:layout_width="40dip" />
+				</TableRow>
 			</TableRow>
 			<TableRow>
 				<EditText
-					android:id="@+id/distance_whole_number_edit_text"
+					android:id="@+id/distance_number_edit_text"
 					android:text="0"
-					android:layout_width="80dip"
-					android:gravity="right"
-					android:inputType="none"
-					android:editable="false" />
-				<TextView
-					android:text="." />
-				<EditText
-					android:id="@+id/distance_tenth_number_edit_text"
-					android:text="0"
-					android:layout_width="50dip"
 					android:gravity="left"
 					android:inputType="none"
-					android:editable="false" />
+					android:editable="false"
+					android:layout_width="160dip" />
 				<Spinner
 					android:id="@+id/distance_units_spinner"
 					android:layout_width="wrap_content" />
 			</TableRow>
 			<TableRow>
-				<Button
-					android:text="-"
-					android:id="@+id/distance_whole_number_minus_button" />
-				<TextView
-					android:text="" />
-				<Button
-					android:text="-"
-					android:id="@+id/distance_tenth_number_minus_button" />
+				<TableRow>
+					<Button
+						android:text="-"
+						android:id="@+id/distance_minus_ten_button"
+						android:layout_width="40dip" />
+					<Button
+						android:text="-"
+						android:id="@+id/distance_minus_one_button"
+						android:layout_width="40dip" />
+					<Button
+						android:text="-"
+						android:id="@+id/distance_minus_tenth_button"
+						android:layout_width="40dip" />
+					<Button
+						android:text="-"
+						android:id="@+id/distance_minus_hundredth_button"
+						android:layout_width="40dip" />
+				</TableRow>
 			</TableRow>
 		</TableLayout>
 		<TextView

@@ -1,5 +1,6 @@
 package org.cogsurv.droid;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 
 import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
@@ -36,14 +37,14 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
   private int                       landmarkVisitId;
   private Landmark                  currentTargetLandmark;
 
-  private int                       distanceWholeNumber  = 0;
-  private int                       distanceTenthNumber  = 0;
+  private double                    distanceNumber       = 0.00;
   private String                    distanceUnits;
 
+  private DecimalFormat             decimalFormat;
+
   private TextView                  targetLandmarkHeader;
-  //private TextView                targetLandmarkCity;
-  private EditText                  distanceWholeNumberEditText;
-  private EditText                  distanceTenthNumberEditText;
+  // private TextView targetLandmarkCity;
+  private EditText                  distanceNumberEditText;
   private Spinner                   distanceUnitsSpinner;
 
   /* compass */
@@ -95,7 +96,10 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
     targetLandmarkHeader = (TextView) findViewById(R.id.target_landmark_header);
     /* targetLandmarkCity = (TextView) findViewById(R.id.target_landmark_city); */
     targetLandmarkHeader.setText(currentTargetLandmark.getName());
-    /*targetLandmarkCity.setText('(' +currentSurveyingTarget.getVenue().getCity() + ')');*/
+    /*
+     * targetLandmarkCity.setText('('
+     * +currentSurveyingTarget.getVenue().getCity() + ')');
+     */
 
     // units spinner
     distanceUnitsSpinner = (Spinner) findViewById(R.id.distance_units_spinner);
@@ -115,18 +119,28 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 
     // register buttons
     Button recordEstimatesButton = (Button) findViewById(R.id.record_estimates_button);
-    Button distanceWholeNumberPlusButton = (Button) findViewById(R.id.distance_whole_number_plus_button);
-    Button distanceWholeNumberMinusBotton = (Button) findViewById(R.id.distance_whole_number_minus_button);
-    Button distanceTenthNumberPlusBotton = (Button) findViewById(R.id.distance_tenth_number_plus_button);
-    Button distanceTenthNumberMinusButton = (Button) findViewById(R.id.distance_tenth_number_minus_button);
+    Button distancePlusTenButton = (Button) findViewById(R.id.distance_plus_ten_button);
+    Button distancePlusOneButton = (Button) findViewById(R.id.distance_plus_one_button);
+    Button distancePlusTenthButton = (Button) findViewById(R.id.distance_plus_tenth_button);
+    Button distancePlusHundredthButton = (Button) findViewById(R.id.distance_plus_hundredth_button);
+    Button distanceMinusTenButton = (Button) findViewById(R.id.distance_minus_ten_button);
+    Button distanceMinusOneButton = (Button) findViewById(R.id.distance_minus_one_button);
+    Button distanceMinusTenthButton = (Button) findViewById(R.id.distance_minus_tenth_button);
+    Button distanceMinusHundredthButton = (Button) findViewById(R.id.distance_minus_hundredth_button);
     recordEstimatesButton.setOnClickListener(this);
-    distanceWholeNumberPlusButton.setOnClickListener(this);
-    distanceWholeNumberMinusBotton.setOnClickListener(this);
-    distanceTenthNumberPlusBotton.setOnClickListener(this);
-    distanceTenthNumberMinusButton.setOnClickListener(this);
+    distancePlusTenButton.setOnClickListener(this);
+    distancePlusOneButton.setOnClickListener(this);
+    distancePlusTenthButton.setOnClickListener(this);
+    distancePlusHundredthButton.setOnClickListener(this);
+    distanceMinusTenButton.setOnClickListener(this);
+    distanceMinusOneButton.setOnClickListener(this);
+    distanceMinusTenthButton.setOnClickListener(this);
+    distanceMinusHundredthButton.setOnClickListener(this);
 
-    distanceWholeNumberEditText = (EditText) findViewById(R.id.distance_whole_number_edit_text);
-    distanceTenthNumberEditText = (EditText) findViewById(R.id.distance_tenth_number_edit_text);
+    distanceNumberEditText = (EditText) findViewById(R.id.distance_number_edit_text);
+    
+    // http://www.velocityreviews.com/forums/t139008-java-double-precision.html
+    decimalFormat = new DecimalFormat("#####.##");
   }
 
   @Override
@@ -150,37 +164,58 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
       /* a normal estimate-to-landmark */
       else {
         // (1) record this directionDistanceEstimate
-        Double distanceEstimate = distanceWholeNumber + (distanceTenthNumber * .1);
         directionDistanceEstimate.setStartLandmarkId(startLandmarkId);
         directionDistanceEstimate.setTargetLandmarkId(currentTargetLandmark.getServerId());
         directionDistanceEstimate.setDatetime(new Date());
         directionDistanceEstimate.setDirectionEstimate(compassValues[0]);
-        directionDistanceEstimate.setDistanceEstimate(distanceEstimate);
+        directionDistanceEstimate.setDistanceEstimate(distanceNumber);
         directionDistanceEstimate.setDistanceEstimateUnits(distanceUnits);
         directionDistanceEstimate.setLandmarkVisitId(landmarkVisitId);
       }
       new RecordDirectionDistanceEstimateAsyncTask().execute(directionDistanceEstimate);
       // (2) go to the next target
-      // will be handled in RecordDirectionDistanceEstimateAsyncTask.onPostExecute
+      // will be handled in
+      // RecordDirectionDistanceEstimateAsyncTask.onPostExecute
       break;
-    case R.id.distance_whole_number_plus_button:
-      ++distanceWholeNumber;
-      distanceWholeNumberEditText.setText(String.valueOf(distanceWholeNumber));
+    case R.id.distance_plus_ten_button:
+      distanceNumber = distanceNumber + 10;
+      distanceNumberEditText.setText(decimalFormat.format(distanceNumber));
       break;
-    case R.id.distance_whole_number_minus_button:
-      if (distanceWholeNumber > 0)
-        --distanceWholeNumber;
-      distanceWholeNumberEditText.setText(String.valueOf(distanceWholeNumber));
+    case R.id.distance_plus_one_button:
+      distanceNumber = distanceNumber + 1;
+      distanceNumberEditText.setText(decimalFormat.format(distanceNumber));
       break;
-    case R.id.distance_tenth_number_plus_button:
-      if (distanceTenthNumber < 9)
-        distanceTenthNumber = distanceTenthNumber + 1;
-      distanceTenthNumberEditText.setText(String.valueOf(distanceTenthNumber));
+    case R.id.distance_plus_tenth_button:
+      distanceNumber = distanceNumber + 0.1;
+      distanceNumberEditText.setText(decimalFormat.format(distanceNumber));
       break;
-    case R.id.distance_tenth_number_minus_button:
-      if (distanceTenthNumber > 0)
-        distanceTenthNumber = distanceTenthNumber - 1;
-      distanceTenthNumberEditText.setText(String.valueOf(distanceTenthNumber));
+    case R.id.distance_plus_hundredth_button:
+      distanceNumber = distanceNumber + 0.01;
+      distanceNumberEditText.setText(decimalFormat.format(distanceNumber));
+      break;
+    case R.id.distance_minus_ten_button:
+      if (distanceNumber >= 10) {
+        distanceNumber = distanceNumber - 10;
+        distanceNumberEditText.setText(decimalFormat.format(distanceNumber));
+      }
+      break;
+    case R.id.distance_minus_one_button:
+      if (distanceNumber >= 1) {
+        distanceNumber = distanceNumber - 1;
+        distanceNumberEditText.setText(decimalFormat.format(distanceNumber));
+      }
+      break;
+    case R.id.distance_minus_tenth_button:
+      if (distanceNumber >= 0.1) {
+        distanceNumber = distanceNumber - 0.1;
+        distanceNumberEditText.setText(decimalFormat.format(distanceNumber));
+      }
+      break;
+    case R.id.distance_minus_hundredth_button:
+      if (distanceNumber >= 0.01) {
+        distanceNumber = distanceNumber - 0.01;
+        distanceNumberEditText.setText(decimalFormat.format(distanceNumber));
+      }
       break;
     /*
      * case R.id.done_surveying_button: this.finish(); break;
@@ -251,7 +286,8 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
         ((CogSurvDroid) getApplication()).mEstimatesTargetSet.remove(0);
 
         if (((CogSurvDroid) getApplication()).mEstimatesTargetSet.size() > 0) {
-          Toast.makeText(LandmarkVisitEstimates.this, "Great guess! Please try another.", Toast.LENGTH_LONG).show();
+          Toast.makeText(LandmarkVisitEstimates.this, "Great guess! Please try another.",
+              Toast.LENGTH_LONG).show();
 
           currentTargetLandmark = ((CogSurvDroid) getApplication()).mEstimatesTargetSet.get(0);
           /* point-to-north, which for now is always the last target */
@@ -264,13 +300,16 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
           /* a normal estimate-to-landmark */
           else {
             targetLandmarkHeader.setText(currentTargetLandmark.getName());
-            /*targetLandmarkCity.setText('(' + currentSurveyingTarget.getVenue().getCity() + ')');*/
-            distanceWholeNumber = 0;
-            distanceTenthNumber = 0;
-            distanceWholeNumberEditText.setText(String.valueOf(distanceWholeNumber));
-            distanceTenthNumberEditText.setText(String.valueOf(distanceTenthNumber));
-  
-            /* findViewById(R.id.estimates_feedback).setVisibility(View.VISIBLE); */
+            /*
+             * targetLandmarkCity.setText('(' +
+             * currentSurveyingTarget.getVenue().getCity() + ')');
+             */
+            distanceNumber = 0;
+            distanceNumberEditText.setText(String.valueOf(distanceNumber));
+
+            /*
+             * findViewById(R.id.estimates_feedback).setVisibility(View.VISIBLE);
+             */
             /*
              * Button doneSurveyingButton = (Button)
              * findViewById(R.id.done_surveying_button);
@@ -278,7 +317,8 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
             /* doneSurveyingButton.setOnClickListener(this); */
           }
         } else {
-          Toast.makeText(LandmarkVisitEstimates.this, "Good work! You've done all the landmarks.", Toast.LENGTH_LONG).show();
+          Toast.makeText(LandmarkVisitEstimates.this, "Good work! You've done all the landmarks.",
+              Toast.LENGTH_LONG).show();
           finish();
         }
 
