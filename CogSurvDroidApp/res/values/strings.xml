@@ -13,7 +13,7 @@
   <string name="login_label">Log-in</string>
   <string name="login_welcome_toast">Welcome to Cognitive Surveyor!</string>
   <string name="landmark_visit_button">Visit a Landmark</string>
-  <string name="direction_distance_estimate_prompt">Please estimate distance and direction to:</string>
+  <string name="direction_distance_estimate_prompt">Please estimate straight-line distance and direction to:</string>
   <string name="direction_estimate_prompt">Please estimate direction to:</string>
 
   <string name="add_a_tip">Add a Tip</string>
