@@ -95,8 +95,10 @@ public class TravelLogService extends Service {
   public void onDestroy() {
     timer.cancel();
     locationManager.removeUpdates(gpsListener);
+    wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TravelLogServiceLock");
     wl.release();
     unregisterReceiver(mLoggedOutReceiver);
+    super.onDestroy();
   }
 
   @Override
