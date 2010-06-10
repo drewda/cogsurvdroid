@@ -71,6 +71,7 @@ public class TravelLogService extends Service {
     
     pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
     wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TravelLogServiceLock");
+    wl.acquire();
   }
   
   @Override
@@ -87,15 +88,14 @@ public class TravelLogService extends Service {
         0,
         CogSurvDroidSettings.TRAVEL_LOG_INTERVAL);
     
-    pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-    wl.acquire();
+    //pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+    //wl.acquire();
   }
   
   @Override
   public void onDestroy() {
     timer.cancel();
     locationManager.removeUpdates(gpsListener);
-    wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TravelLogServiceLock");
     wl.release();
     unregisterReceiver(mLoggedOutReceiver);
     super.onDestroy();

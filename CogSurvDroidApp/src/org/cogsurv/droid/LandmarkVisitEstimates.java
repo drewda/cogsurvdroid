@@ -110,10 +110,11 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 
 		/* set up geomagneticfield */
 		locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-		//locationManager.requestLocationUpdates(
-		//		LocationManager.NETWORK_PROVIDER,
-		//		CogSurvDroidSettings.TRAVEL_LOG_INTERVAL, 0, locationListener);
-		locationFix = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		// locationManager.requestLocationUpdates(
+		// LocationManager.NETWORK_PROVIDER,
+		// CogSurvDroidSettings.TRAVEL_LOG_INTERVAL, 0, locationListener);
+		locationFix = locationManager
+				.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 		geomagneticfield = new GeomagneticField((float) locationFix
 				.getLatitude(), (float) locationFix.getLongitude(),
 				(float) locationFix.getAltitude(), new Date().getTime());
@@ -162,28 +163,28 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 
 		// register buttons
 		Button recordEstimatesButton = (Button) findViewById(R.id.record_estimates_button);
+		Button distancePlusHundredButton = (Button) findViewById(R.id.distance_plus_hundred_button);
 		Button distancePlusTenButton = (Button) findViewById(R.id.distance_plus_ten_button);
 		Button distancePlusOneButton = (Button) findViewById(R.id.distance_plus_one_button);
 		Button distancePlusTenthButton = (Button) findViewById(R.id.distance_plus_tenth_button);
-		Button distancePlusHundredthButton = (Button) findViewById(R.id.distance_plus_hundredth_button);
+		Button distanceMinusHundredButton = (Button) findViewById(R.id.distance_minus_hundred_button);
 		Button distanceMinusTenButton = (Button) findViewById(R.id.distance_minus_ten_button);
 		Button distanceMinusOneButton = (Button) findViewById(R.id.distance_minus_one_button);
 		Button distanceMinusTenthButton = (Button) findViewById(R.id.distance_minus_tenth_button);
-		Button distanceMinusHundredthButton = (Button) findViewById(R.id.distance_minus_hundredth_button);
 		recordEstimatesButton.setOnClickListener(this);
+		distancePlusHundredButton.setOnClickListener(this);
 		distancePlusTenButton.setOnClickListener(this);
 		distancePlusOneButton.setOnClickListener(this);
 		distancePlusTenthButton.setOnClickListener(this);
-		distancePlusHundredthButton.setOnClickListener(this);
+		distanceMinusHundredButton.setOnClickListener(this);
 		distanceMinusTenButton.setOnClickListener(this);
 		distanceMinusOneButton.setOnClickListener(this);
 		distanceMinusTenthButton.setOnClickListener(this);
-		distanceMinusHundredthButton.setOnClickListener(this);
 
 		distanceNumberEditText = (EditText) findViewById(R.id.distance_number_edit_text);
 
 		// http://www.velocityreviews.com/forums/t139008-java-double-precision.html
-		decimalFormat = new DecimalFormat("#####.##");
+		decimalFormat = new DecimalFormat("#####.#");
 	}
 
 	@Override
@@ -201,8 +202,8 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 			if (currentTargetLandmark.getName() == CogSurvDroidSettings.POINT_TO_NORTH_COMMAND) {
 				directionDistanceEstimate.setStartLandmarkId(startLandmarkId);
 				directionDistanceEstimate.setDatetime(new Date());
-				directionDistanceEstimate
-						.setDirectionEstimate(compassValues[0] + geomagneticfield.getDeclination());
+				directionDistanceEstimate.setDirectionEstimate(compassValues[0]
+						+ geomagneticfield.getDeclination());
 				directionDistanceEstimate.setLandmarkVisitId(landmarkVisitId);
 			}
 			/* a normal estimate-to-landmark */
@@ -213,8 +214,8 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 						.setTargetLandmarkId(currentTargetLandmark
 								.getServerId());
 				directionDistanceEstimate.setDatetime(new Date());
-				directionDistanceEstimate
-						.setDirectionEstimate(compassValues[0] + geomagneticfield.getDeclination());
+				directionDistanceEstimate.setDirectionEstimate(compassValues[0]
+						+ geomagneticfield.getDeclination());
 				directionDistanceEstimate.setDistanceEstimate(distanceNumber);
 				directionDistanceEstimate
 						.setDistanceEstimateUnits(distanceUnits);
@@ -225,6 +226,11 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 			// (2) go to the next target
 			// will be handled in
 			// RecordDirectionDistanceEstimateAsyncTask.onPostExecute
+			break;
+		case R.id.distance_plus_hundred_button:
+			distanceNumber = distanceNumber + 100;
+			distanceNumberEditText
+					.setText(decimalFormat.format(distanceNumber));
 			break;
 		case R.id.distance_plus_ten_button:
 			distanceNumber = distanceNumber + 10;
@@ -241,10 +247,12 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 			distanceNumberEditText
 					.setText(decimalFormat.format(distanceNumber));
 			break;
-		case R.id.distance_plus_hundredth_button:
-			distanceNumber = distanceNumber + 0.01;
-			distanceNumberEditText
-					.setText(decimalFormat.format(distanceNumber));
+		case R.id.distance_minus_hundred_button:
+			if (distanceNumber >= 100) {
+				distanceNumber = distanceNumber - 100;
+				distanceNumberEditText.setText(decimalFormat
+						.format(distanceNumber));
+			}
 			break;
 		case R.id.distance_minus_ten_button:
 			if (distanceNumber >= 10) {
@@ -263,13 +271,6 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 		case R.id.distance_minus_tenth_button:
 			if (distanceNumber >= 0.1) {
 				distanceNumber = distanceNumber - 0.1;
-				distanceNumberEditText.setText(decimalFormat
-						.format(distanceNumber));
-			}
-			break;
-		case R.id.distance_minus_hundredth_button:
-			if (distanceNumber >= 0.01) {
-				distanceNumber = distanceNumber - 0.01;
 				distanceNumberEditText.setText(decimalFormat
 						.format(distanceNumber));
 			}
