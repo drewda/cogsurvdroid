@@ -2,6 +2,7 @@ package org.cogsurv.cogsurver.content;
 
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
 import org.cogsurv.cogsurver.types.Landmark;
@@ -617,7 +618,8 @@ public class CogSurverProvider extends ContentProvider {
       values.put(TravelFixesColumns._ID, travelFix.getLocalId());
     }
     values.put(TravelFixesColumns.SERVER_ID, travelFix.getServerId());
-    values.put(TravelFixesColumns.USER_ID, travelFix.getUserId());    values.put(TravelFixesColumns.LATITUDE, travelFix.getLatitude());
+    values.put(TravelFixesColumns.USER_ID, travelFix.getUserId());    
+    values.put(TravelFixesColumns.LATITUDE, travelFix.getLatitude());
     values.put(TravelFixesColumns.LONGITUDE, travelFix.getLongitude());
     values.put(TravelFixesColumns.ALTITUDE, travelFix.getAltitude());
     values.put(TravelFixesColumns.SPEED, travelFix.getSpeed());
@@ -626,6 +628,56 @@ public class CogSurverProvider extends ContentProvider {
     values.put(TravelFixesColumns.TRAVEL_MODE, travelFix.getTravelMode());
     values.put(TravelFixesColumns.TIME, travelFix.getDatetime().getTime());
     return values;
+  }
+  
+  public static TravelFix createTravelFix(Cursor cursor) {
+    int idxLocalId = cursor.getColumnIndexOrThrow(TravelFixesColumns._ID);
+    int idxServerId = cursor.getColumnIndexOrThrow(TravelFixesColumns.SERVER_ID);
+    int idxUserId = cursor.getColumnIndexOrThrow(TravelFixesColumns.USER_ID);
+    int idxLatitude= cursor.getColumnIndexOrThrow(TravelFixesColumns.LATITUDE);
+    int idxLongitude = cursor.getColumnIndexOrThrow(TravelFixesColumns.LONGITUDE);
+    int idxAltitude = cursor.getColumnIndexOrThrow(TravelFixesColumns.ALTITUDE);
+    int idxSpeed = cursor.getColumnIndexOrThrow(TravelFixesColumns.SPEED);
+    int idxAccuracy = cursor.getColumnIndexOrThrow(TravelFixesColumns.ACCURACY);
+    int idxPositioningMethod = cursor.getColumnIndexOrThrow(TravelFixesColumns.POSITIONING_METHOD);
+    int idxTravelMode = cursor.getColumnIndexOrThrow(TravelFixesColumns.TRAVEL_MODE);
+    int idxTime = cursor.getColumnIndexOrThrow(TravelFixesColumns.TIME);
+
+    TravelFix travelFix = new TravelFix();
+    if (!cursor.isNull(idxLocalId)) {
+      travelFix.setLocalId(cursor.getInt(idxLocalId));
+    }
+    if (!cursor.isNull(idxServerId)) {
+      travelFix.setServerId(cursor.getInt(idxServerId));
+    }
+    if (!cursor.isNull(idxUserId)) {
+      travelFix.setUserId(cursor.getInt(idxUserId));
+    }
+    if (!cursor.isNull(idxLatitude)) {
+      travelFix.setLatitude(cursor.getDouble(idxLatitude));
+    }
+    if (!cursor.isNull(idxLongitude)) {
+      travelFix.setLongitude(cursor.getDouble(idxLongitude));
+    }
+    if (!cursor.isNull(idxAltitude)) {
+      travelFix.setAltitude(cursor.getDouble(idxAltitude));
+    }
+    if (!cursor.isNull(idxSpeed)) {
+      travelFix.setSpeed(cursor.getFloat(idxSpeed));
+    }
+    if (!cursor.isNull(idxAccuracy)) {
+      travelFix.setAccuracy(cursor.getFloat(idxAccuracy));
+    }
+    if (!cursor.isNull(idxPositioningMethod)) {
+      travelFix.setPositioningMethod(cursor.getString(idxPositioningMethod));
+    }
+    if (!cursor.isNull(idxTravelMode)) {
+      travelFix.setTravelMode(cursor.getString(idxTravelMode));
+    }
+    if (!cursor.isNull(idxTime)) {
+      travelFix.setDatetime(new Date(cursor.getInt(idxTime)));
+    }
+    return travelFix;
   }
   
   /* LANDMARK VISIT */
@@ -642,6 +694,32 @@ public class CogSurverProvider extends ContentProvider {
     return values;
   }
   
+  public static LandmarkVisit createLandmarkVisit(Cursor cursor) {
+    int idxLocalId = cursor.getColumnIndexOrThrow(LandmarkVisitsColumns._ID);
+    int idxServerId = cursor.getColumnIndexOrThrow(LandmarkVisitsColumns.SERVER_ID);
+    int idxUserId = cursor.getColumnIndexOrThrow(LandmarkVisitsColumns.USER_ID);
+    int idxLandmarkId = cursor.getColumnIndexOrThrow(LandmarkVisitsColumns.LANDMARK_ID);
+    int idxTime = cursor.getColumnIndexOrThrow(LandmarkVisitsColumns.TIME);
+
+    LandmarkVisit landmarkVisit = new LandmarkVisit();
+    if (!cursor.isNull(idxLocalId)) {
+      landmarkVisit.setLocalId(cursor.getInt(idxLocalId));
+    }
+    if (!cursor.isNull(idxServerId)) {
+      landmarkVisit.setServerId(cursor.getInt(idxServerId));
+    }
+    if (!cursor.isNull(idxUserId)) {
+      landmarkVisit.setUserId(cursor.getInt(idxUserId));
+    }
+    if (!cursor.isNull(idxLandmarkId)) {
+      landmarkVisit.setLandmarkId(cursor.getInt(idxLandmarkId));
+    }
+    if (!cursor.isNull(idxTime)) {
+      landmarkVisit.setDatetime(new Date(cursor.getInt(idxTime)));
+    }
+    return landmarkVisit;
+  }
+  
   /* DIRECTION DISTANCE ESTIMATE */
   public static ContentValues createContentValues(DirectionDistanceEstimate directionDistanceEstimate) {
     ContentValues values = new ContentValues();
@@ -654,11 +732,57 @@ public class CogSurverProvider extends ContentProvider {
     values.put(DirectionDistanceEstimatesColumns.LANDMARK_VISIT_ID, directionDistanceEstimate.getLandmarkVisitId());
     values.put(DirectionDistanceEstimatesColumns.TIME, directionDistanceEstimate.getDatetime().getTime());
     values.put(DirectionDistanceEstimatesColumns.DIRECTION_ESTIMATE, directionDistanceEstimate.getDirectionEstimate());
-    values.put(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE, directionDistanceEstimate.getDirectionEstimate());
+    values.put(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE, directionDistanceEstimate.getDistanceEstimate());
     values.put(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE_UNITS, directionDistanceEstimate.getDistanceEstimateUnits());
     values.put(DirectionDistanceEstimatesColumns.START_LANDMARK_ID, directionDistanceEstimate.getStartLandmarkId());
     values.put(DirectionDistanceEstimatesColumns.TARGET_LANDMARK_ID, directionDistanceEstimate.getTargetLandmarkId());
     return values;
+  }
+  
+  public static DirectionDistanceEstimate createDirectionDistanceEstimate(Cursor cursor) {
+    int idxLocalId = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns._ID);
+    int idxServerId = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.SERVER_ID);
+    int idxUserId = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.USER_ID);
+    int idxLandmarkVisitId = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.LANDMARK_VISIT_ID);
+    int idxTime = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.TIME);
+    int idxDirectionEstimate = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.DIRECTION_ESTIMATE);
+    int idxDistanceEstimate = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE);
+    int idxDistanceEstimateUnits = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.DISTANCE_ESTIMATE_UNITS);
+    int idxStartLandmarkId = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.START_LANDMARK_ID);
+    int idxTargetLandmarkId = cursor.getColumnIndexOrThrow(DirectionDistanceEstimatesColumns.TARGET_LANDMARK_ID);
+
+    DirectionDistanceEstimate directionDistanceEstimate = new DirectionDistanceEstimate();
+    if (!cursor.isNull(idxLocalId)) {
+      directionDistanceEstimate.setLocalId(cursor.getInt(idxLocalId));
+    }
+    if (!cursor.isNull(idxServerId)) {
+      directionDistanceEstimate.setServerId(cursor.getInt(idxServerId));
+    }
+    if (!cursor.isNull(idxUserId)) {
+      directionDistanceEstimate.setUserId(cursor.getInt(idxUserId));
+    }
+    if (!cursor.isNull(idxLandmarkVisitId)) {
+      directionDistanceEstimate.setLandmarkVisitId(cursor.getInt(idxLandmarkVisitId));
+    }
+    if (!cursor.isNull(idxTime)) {
+      directionDistanceEstimate.setDatetime(new Date(cursor.getInt(idxTime)));
+    }
+    if (!cursor.isNull(idxDirectionEstimate)) {
+      directionDistanceEstimate.setDirectionEstimate(cursor.getDouble(idxDirectionEstimate));
+    }
+    if (!cursor.isNull(idxDistanceEstimate)) {
+      directionDistanceEstimate.setDistanceEstimate(cursor.getDouble(idxDistanceEstimate));
+    }
+    if (!cursor.isNull(idxDistanceEstimateUnits)) {
+      directionDistanceEstimate.setDistanceEstimateUnits(cursor.getString(idxDistanceEstimateUnits));
+    }
+    if (!cursor.isNull(idxStartLandmarkId)) {
+      directionDistanceEstimate.setStartLandmarkId(cursor.getInt(idxStartLandmarkId));
+    }
+    if (!cursor.isNull(idxTargetLandmarkId)) {
+      directionDistanceEstimate.setTargetLandmarkId(cursor.getInt(idxTargetLandmarkId));
+    }
+    return directionDistanceEstimate;
   }
 
 }

@@ -1,12 +1,23 @@
 package org.cogsurv.droid;
 
+import java.io.IOException;
+
+import org.cogsurv.cogsurver.CogSurver;
+import org.cogsurv.cogsurver.content.CogSurverProvider;
+import org.cogsurv.cogsurver.content.DirectionDistanceEstimatesColumns;
+import org.cogsurv.cogsurver.content.LandmarkVisitsColumns;
+import org.cogsurv.cogsurver.content.TravelFixesColumns;
+import org.cogsurv.cogsurver.error.CogSurvCredentialsException;
+import org.cogsurv.cogsurver.error.CogSurvError;
+import org.cogsurv.cogsurver.error.CogSurvException;
+import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
+import org.cogsurv.cogsurver.types.LandmarkVisit;
+import org.cogsurv.cogsurver.types.TravelFix;
 import org.cogsurv.droid.app.TravelLogService;
 import org.cogsurv.droid.preferences.Preferences;
 import org.cogsurv.droid.util.NotificationsUtil;
 
 import android.app.Activity;
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,20 +33,19 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 public class MainActivity extends Activity implements OnClickListener {
-  public static final String  TAG                = "MainActivity";
-  public static final boolean DEBUG              = CogSurvDroidSettings.DEBUG;
+  public static final String TAG = "MainActivity";
+  public static final boolean DEBUG = CogSurvDroidSettings.DEBUG;
 
-  private BroadcastReceiver   mLoggedOutReceiver = new BroadcastReceiver() {
-                                                   @Override
-                                                   public void onReceive(Context context,
-                                                       Intent intent) {
-                                                     if (DEBUG)
-                                                       Log.d(TAG, "onReceive: " + intent);
-                                                     finish();
-                                                   }
-                                                 };
+  private BroadcastReceiver mLoggedOutReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      if (DEBUG)
+        Log.d(TAG, "onReceive: " + intent);
+      finish();
+    }
+  };
 
-  private View                landmarkVisitButton;
+  private View landmarkVisitButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +53,8 @@ public class MainActivity extends Activity implements OnClickListener {
     if (DEBUG)
       Log.d(TAG, "onCreate()");
     /* setDefaultKeyMode(Activity.DEFAULT_KEYS_SEARCH_LOCAL); */
-    registerReceiver(mLoggedOutReceiver, new IntentFilter(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
+    registerReceiver(mLoggedOutReceiver, new IntentFilter(
+        CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
 
     // Don't start the main activity if we don't have credentials
     if (!((CogSurvDroid) getApplication()).isReady()) {
@@ -56,23 +67,17 @@ public class MainActivity extends Activity implements OnClickListener {
       Log.d(TAG, "Setting up main activity layout.");
 
     // if TravelLogService isn't already started, start it
-    ((CogSurvDroid) getApplication()).requestStartService();
+    if (((CogSurvDroid) getApplication()).isReady()) {
+      ((CogSurvDroid) getApplication()).requestStartService();
+      if (((CogSurvDroid) getApplication()).landmarksLoaded != true) {
+        new ReadLandmarksAsyncTask().execute();
+      }
+    }
 
     setContentView(R.layout.main_activity);
 
     landmarkVisitButton = this.findViewById(R.id.landmark_visit_button);
-    // we only want to enable the landmarkVisitButton after we've downloaded the
-    // landmarks
-    /* TODO: move this to CogSurvDroid so that it doesn't happen each time we
-     * rotate the screen and re-run MainActivity.onCreate */ 
-    landmarkVisitButton.setEnabled(false);
-    landmarkVisitButton.setFocusable(false);
     landmarkVisitButton.setOnClickListener(this);
-
-    // fetch the landmarks
-    if (((CogSurvDroid) getApplication()).isReady()) {
-      new ReadLandmarksAsyncTask().execute();
-    }
   }
 
   @Override
@@ -82,18 +87,18 @@ public class MainActivity extends Activity implements OnClickListener {
   }
 
   private static final int MENU_SWITCH_USER = 1;
-  private static final int MENU_SYNC        = 2;
-  private static final int MENU_SHUTDOWN    = 3;
+  private static final int MENU_SYNC = 2;
+  private static final int MENU_SHUTDOWN = 3;
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     super.onCreateOptionsMenu(menu);
 
-    menu.add(Menu.NONE, MENU_SWITCH_USER, 1, R.string.menu_switch_user).setIcon(
-        android.R.drawable.ic_menu_edit);
+    menu.add(Menu.NONE, MENU_SWITCH_USER, 1, R.string.menu_switch_user)
+        .setIcon(android.R.drawable.ic_menu_edit);
 
-    menu.add(Menu.NONE, MENU_SYNC, 2, R.string.menu_sync)
-        .setIcon(android.R.drawable.ic_menu_upload);
+    menu.add(Menu.NONE, MENU_SYNC, 2, R.string.menu_sync).setIcon(
+        android.R.drawable.ic_menu_upload);
 
     menu.add(Menu.NONE, MENU_SHUTDOWN, 3, R.string.menu_shutdown).setIcon(
         android.R.drawable.ic_menu_close_clear_cancel);
@@ -112,23 +117,17 @@ public class MainActivity extends Activity implements OnClickListener {
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
     case MENU_SWITCH_USER:
-      if (Preferences.logoutUser( //
-          ((CogSurvDroid) getApplication()).getCogSurver(), //
-          PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit())) {
-        // (1) stop TravelLogService
-        // Intent serviceIntent = new Intent(this, TravelLogService.class);
-        // stopService(serviceIntent);
-        // (2) go to login again
-        // redirectToLoginActivity();
-        sendBroadcast(new Intent(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
-        return true;
-      }
-      return true;
+      ((CogSurvDroid) getApplication()).landmarksLoaded = false;
+      Preferences.logoutUser(((CogSurvDroid) getApplication()).getCogSurver(),
+          PreferenceManager
+              .getDefaultSharedPreferences(getApplicationContext()).edit());
+      sendBroadcast(new Intent(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
+      finish();
       // org.cogsurv.droid.preferences.Preferences.logoutUser(((CogSurvDroid)
       // getApplication()).getCogSurver(),
       // PreferenceManager.getDefaultSharedPreferences(this).edit())
     case MENU_SYNC:
-      // TODO: trigger the sync
+      //new SyncAsyncTask().execute();
       return true;
     case MENU_SHUTDOWN:
       // (1) stop TravelLogService
@@ -164,7 +163,8 @@ public class MainActivity extends Activity implements OnClickListener {
     setVisible(false);
     Intent intent = new Intent(this, LoginActivity.class);
     intent.setAction(Intent.ACTION_MAIN);
-    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY
+        | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
         | Intent.FLAG_ACTIVITY_CLEAR_TOP);
     startActivity(intent);
     finish();
@@ -181,37 +181,133 @@ public class MainActivity extends Activity implements OnClickListener {
     }
   }
 
-  /* FETCH LANDMARKS */
-  private Dialog mProgressDialog;
-
-  private Dialog showProgressDialog() {
-    if (mProgressDialog == null) {
-      ProgressDialog dialog = new ProgressDialog(this);
-      dialog.setCancelable(true);
-      dialog.setIndeterminate(true);
-      dialog.setTitle("Syncing");
-      dialog.setIcon(android.R.drawable.ic_dialog_info);
-      dialog.setMessage("Please wait while we download your landmarks.");
-      mProgressDialog = dialog;
-    }
-    mProgressDialog.show();
-    return mProgressDialog;
-  }
-
-  private void dismissProgressDialog() {
-    try {
-      mProgressDialog.dismiss();
-    } catch (IllegalArgumentException e) {
-      // We don't mind. android cleared it for us.
-    }
-  }
-
-  private class ReadLandmarksAsyncTask extends AsyncTask<Void, Void, Cursor> {
+  private class SyncAsyncTask extends AsyncTask<Void, Void, Boolean> {
     private Exception mReason;
 
     @Override
     public void onPreExecute() {
-      showProgressDialog();
+      ((CogSurvDroid) getApplication()).showProgressDialog(
+          "Uploading stuff for userServerId=2", "Syncing", MainActivity.this);
+    }
+
+    @Override
+    protected Boolean doInBackground(Void... params) {
+      Log.d("CogSurvDroid", "SyncAsyncTask doInBackground");
+      /* LANDMARK VISITS */
+      Cursor landmarkVisitCursor = getContentResolver().query(
+          LandmarkVisitsColumns.CONTENT_URI, null,
+          LandmarkVisitsColumns.USER_ID + "=16", null, null);
+      while (landmarkVisitCursor.moveToNext()) {
+        LandmarkVisit landmarkVisit = CogSurverProvider
+            .createLandmarkVisit(landmarkVisitCursor);
+        Log.d("CogSurvDroid", "SyncAsyncTask uploading landmarkVisit "
+            + landmarkVisit.getLocalId());
+        try {
+          ((CogSurvDroid) getApplication()).getCogSurver().createLandmarkVisit(
+              landmarkVisit);
+        } catch (CogSurvCredentialsException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (CogSurvError e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (CogSurvException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
+      
+
+      /* DIRECTION DISTANCE ESTIMATES */
+      Cursor directionDistanceEstimatesCursor = getContentResolver().query(
+          DirectionDistanceEstimatesColumns.CONTENT_URI, null,
+          DirectionDistanceEstimatesColumns.USER_ID + "=16", null, null);
+      while (directionDistanceEstimatesCursor.moveToNext()) {
+        DirectionDistanceEstimate directionDistanceEstimate = CogSurverProvider
+            .createDirectionDistanceEstimate(directionDistanceEstimatesCursor);
+        Log.d("CogSurvDroid",
+            "SyncAsyncTask uploading directionDistanceEstimate "
+                + directionDistanceEstimate.getLocalId());
+        try {
+          ((CogSurvDroid) getApplication()).getCogSurver()
+              .createDirectionDistanceEstimate(directionDistanceEstimate);
+        } catch (CogSurvCredentialsException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (CogSurvError e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (CogSurvException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
+
+      /* TRAVEL FIXES */
+      Cursor travelFixesCursor = getContentResolver().query(
+          TravelFixesColumns.CONTENT_URI, null,
+          TravelFixesColumns.USER_ID + "=17", null, null);
+      Log.d("CogSurvDroid", "SyncAsyncTask uploading "
+          + travelFixesCursor.getCount() + " travelFixes ");
+      while (travelFixesCursor.moveToNext()) {
+        TravelFix travelFix = CogSurverProvider
+            .createTravelFix(travelFixesCursor);
+        Log.d("CogSurvDroid", "SyncAsyncTask uploading travelFix "
+            + travelFix.getLocalId());
+        try {
+          ((CogSurvDroid) getApplication()).getCogSurver().createTravelFix(
+              travelFix);
+        } catch (CogSurvCredentialsException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (CogSurvError e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (CogSurvException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
+
+      return true;
+    }
+
+    @Override
+    public void onPostExecute(Boolean bool) {
+      if (bool != true) {
+        NotificationsUtil.ToastReasonForFailure(MainActivity.this, mReason);
+      } else {
+        ((CogSurvDroid) getApplication()).dismissProgressDialog();
+        // Make sure the caller knows things worked out alright.
+        setResult(Activity.RESULT_OK);
+      }
+    }
+
+    @Override
+    protected void onCancelled() {
+      setVisible(true);
+      ((CogSurvDroid) getApplication()).dismissProgressDialog();
+    }
+  }
+
+  /* FETCH LANDMARKS */
+  public class ReadLandmarksAsyncTask extends AsyncTask<Void, Void, Cursor> {
+    private Exception mReason;
+
+    @Override
+    public void onPreExecute() {
+      ((CogSurvDroid) getApplication()).showProgressDialog(
+          "Please wait while we download your landmarks.", "Syncing",
+          MainActivity.this);
     }
 
     @Override
@@ -230,10 +326,11 @@ public class MainActivity extends Activity implements OnClickListener {
       if (cursor == null) {
         NotificationsUtil.ToastReasonForFailure(MainActivity.this, mReason);
       } else {
-        dismissProgressDialog();
+        ((CogSurvDroid) getApplication()).dismissProgressDialog();
         // now we can enable the landmarkVisitButton
-        landmarkVisitButton.setEnabled(true);
-        landmarkVisitButton.setFocusable(true);
+        // landmarkVisitButton.setEnabled(true);
+        // landmarkVisitButton.setFocusable(true);
+        ((CogSurvDroid) getApplication()).landmarksLoaded = true;
         // Make sure the caller knows things worked out alright.
         setResult(Activity.RESULT_OK);
       }
@@ -242,7 +339,7 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     protected void onCancelled() {
       setVisible(true);
-      dismissProgressDialog();
+      ((CogSurvDroid) getApplication()).dismissProgressDialog();
     }
   }
 }

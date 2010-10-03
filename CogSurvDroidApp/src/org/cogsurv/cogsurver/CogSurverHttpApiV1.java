@@ -66,6 +66,7 @@ class CogSurverHttpApiV1 {
             if (DEBUG) LOG.log(Level.FINE, "Clearing Credentials");
             Log.d("CogSurverHttpApiV1", "Clearing Credentials");
             mHttpClient.getCredentialsProvider().clear();
+            mHttpClient.getCookieStore().clear();
         } else {
             if (DEBUG) LOG.log(Level.FINE, "Setting E-mail/Password: " + email + "/******");
             Log.d("CogSurverHttpApiV1", "Setting E-mail/Password: " + email + "/" + password);

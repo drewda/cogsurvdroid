@@ -10,7 +10,6 @@ import org.cogsurv.droid.preferences.Preferences;
 import org.cogsurv.droid.util.NotificationsUtil;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -41,8 +40,6 @@ public class LoginActivity extends Activity {
     private TextView mNewAccountTextView;
     private EditText mPhoneUsernameEditText;
     private EditText mPasswordEditText;
-
-    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,27 +80,6 @@ public class LoginActivity extends Activity {
             mLoginTask.cancel(true);
         }
         return mLoginTask;
-    }
-
-    private ProgressDialog showProgressDialog() {
-        if (mProgressDialog == null) {
-            ProgressDialog dialog = new ProgressDialog(this);
-            dialog.setTitle(R.string.login_dialog_title);
-            dialog.setMessage(getString(R.string.login_dialog_message));
-            dialog.setIndeterminate(true);
-            dialog.setCancelable(true);
-            mProgressDialog = dialog;
-        }
-        mProgressDialog.show();
-        return mProgressDialog;
-    }
-
-    private void dismissProgressDialog() {
-        try {
-            mProgressDialog.dismiss();
-        } catch (IllegalArgumentException e) {
-            // We don't mind. android cleared it for us.
-        }
     }
 
     private void ensureUi() {
@@ -167,7 +143,7 @@ public class LoginActivity extends Activity {
         @Override
         protected void onPreExecute() {
             if (DEBUG) Log.d(TAG, "onPreExecute()");
-            showProgressDialog();
+            ((CogSurvDroid)getApplication()).showProgressDialog(getString(R.string.login_dialog_message), getString(R.string.login_dialog_title), LoginActivity.this);
         }
 
         @Override
@@ -204,15 +180,19 @@ public class LoginActivity extends Activity {
         @Override
         protected void onPostExecute(Boolean loggedIn) {
             if (DEBUG) Log.d(TAG, "onPostExecute(): " + loggedIn);
-            CogSurvDroid cogSurvDroid = (CogSurvDroid) getApplication();
 
+            ((CogSurvDroid)getApplication()).dismissProgressDialog();
+            
             if (loggedIn) {
                 sendBroadcast(new Intent(CogSurvDroid.INTENT_ACTION_LOGGED_IN));
                 Toast.makeText(LoginActivity.this, getString(R.string.login_welcome_toast),
                         Toast.LENGTH_LONG).show();
 
                 // Launch the travelLogService
-                cogSurvDroid.requestStartService();
+                //cogSurvDroid.requestStartService();
+                
+                // load landmarks
+                //new ReadLandmarksAsyncTask().execute();
 
                 // Launch the main activity to let the user do anything.
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -226,12 +206,11 @@ public class LoginActivity extends Activity {
                 sendBroadcast(new Intent(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
                 NotificationsUtil.ToastReasonForFailure(LoginActivity.this, mReason);
             }
-            dismissProgressDialog();
         }
 
         @Override
         protected void onCancelled() {
-            dismissProgressDialog();
+          ((CogSurvDroid)getApplication()).dismissProgressDialog();
         }
     }
 }

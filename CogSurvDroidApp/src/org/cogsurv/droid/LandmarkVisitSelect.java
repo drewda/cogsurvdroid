@@ -49,6 +49,13 @@ public class LandmarkVisitSelect extends ListActivity {
 
     super.onCreate(savedInstanceState);
     registerReceiver(mLoggedOutReceiver, new IntentFilter(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
+    
+    if (((CogSurvDroid)getApplication()).landmarksLoaded != true) {
+      Toast.makeText(this, "Landmarks haven't been loaded yet.", Toast.LENGTH_LONG);
+      finish();
+    }
+    
+    setContentView(R.layout.landmark_visit_select);
 
     // query for person's landmarks
     landmarksCursor = ((CogSurvDroid) getApplication()).readLandmarks(false);
@@ -95,8 +102,6 @@ public class LandmarkVisitSelect extends ListActivity {
     landmarkVisit.setDatetime(new Date());
     landmarkVisit.setLandmarkId(startLandmarkId);
     new RecordLandmarkVisitAsyncTask().execute(landmarkVisit);
-
-    landmarkVisit = ((CogSurvDroid) getApplication()).recordLandmarkVisit(landmarkVisit);
 
     Log.v(CogSurvDroid.TAG, "landmark selected: " + startLandmarkId + "; number of targets: "
         + estimatesTargetSet.size());
