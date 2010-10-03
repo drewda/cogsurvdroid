@@ -82,7 +82,9 @@ public class TravelLogService extends Service {
     timer.scheduleAtFixedRate(
         new TimerTask() {
           public void run() {
-            processGPS();
+            if (gpsFix != null) {
+              processGPS();
+            }
           }
         },
         0,
