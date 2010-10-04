@@ -17,7 +17,6 @@
   <string name="direction_estimate_prompt">Please estimate direction to:</string>
   
    <string-array name="distance_units_array">
-   	<item>feet</item>
     <item>miles</item>
     <item>kilometers</item>
     <item>feet</item>

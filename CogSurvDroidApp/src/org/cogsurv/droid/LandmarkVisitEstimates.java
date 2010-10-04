@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
 import org.cogsurv.cogsurver.types.Landmark;
+import org.cogsurv.droid.preferences.Preferences;
 import org.cogsurv.droid.util.NotificationsUtil;
 
 import android.app.Activity;
@@ -16,6 +17,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
@@ -27,6 +30,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -65,7 +69,8 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
     }
 
     public void onSensorChanged(SensorEvent event) {
-      if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
+      if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE
+          || event.accuracy == SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
         Toast
             .makeText(
                 getBaseContext(),
@@ -181,18 +186,25 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
         .createFromResource(this, R.array.distance_units_array,
             android.R.layout.simple_spinner_item);
     distanceUnitsSpinner.setAdapter(distanceUnitsAdapter);
+    // note that selected units are saved as default for next time
+    SharedPreferences prefs = PreferenceManager
+        .getDefaultSharedPreferences(getApplicationContext());
+    final Editor editor = prefs.edit();
+    distanceUnitsSpinner.setSelection(Preferences.getLastUsedDistanceUnit(prefs));
     distanceUnitsSpinner
         .setOnItemSelectedListener(new OnItemSelectedListener() {
           @Override
           public void onItemSelected(AdapterView<?> parent, View view,
               int position, long id) {
             distanceUnits = parent.getItemAtPosition(position).toString();
+            Preferences.saveLastUsedDistanceUnit(editor, position);
           }
 
           @Override
           public void onNothingSelected(AdapterView<?> arg0) {
           }
         });
+
 
     // register buttons
     recordEstimatesButton = (Button) findViewById(R.id.record_estimates_button);

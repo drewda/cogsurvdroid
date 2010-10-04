@@ -42,6 +42,9 @@ public class Preferences {
 
     // Extra info for getUserId
     private static final String PREFERENCE_ID = "id";
+    
+    // Last used distance unit
+    private static final String PREFERENCE_LAST_USED_DISTANCE_UNIT = "last_used_distance_unit";
 
   public static boolean loginUser(CogSurver cogSurver, String login,
       String password, Editor editor) throws CogSurvCredentialsException,
@@ -88,5 +91,14 @@ public class Preferences {
         } else {
             if (Preferences.DEBUG) Log.d(Preferences.TAG, "Unable to lookup user.");
         }
+    }
+    
+    public static void saveLastUsedDistanceUnit(final Editor editor, int spinnerIndex) {
+      editor.putInt(PREFERENCE_LAST_USED_DISTANCE_UNIT, spinnerIndex);
+      editor.commit();
+    }
+    
+    public static int getLastUsedDistanceUnit(SharedPreferences prefs) {
+      return prefs.getInt(PREFERENCE_LAST_USED_DISTANCE_UNIT, 0);
     }
 }
