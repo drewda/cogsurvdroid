@@ -197,6 +197,7 @@ public class MainActivity extends Activity implements OnClickListener {
       Cursor landmarkVisitCursor = getContentResolver().query(
           LandmarkVisitsColumns.CONTENT_URI, null,
           LandmarkVisitsColumns.USER_ID + "=16", null, null);
+      startManagingCursor(landmarkVisitCursor);
       while (landmarkVisitCursor.moveToNext()) {
         LandmarkVisit landmarkVisit = CogSurverProvider
             .createLandmarkVisit(landmarkVisitCursor);
@@ -225,6 +226,7 @@ public class MainActivity extends Activity implements OnClickListener {
       Cursor directionDistanceEstimatesCursor = getContentResolver().query(
           DirectionDistanceEstimatesColumns.CONTENT_URI, null,
           DirectionDistanceEstimatesColumns.USER_ID + "=16", null, null);
+      startManagingCursor(directionDistanceEstimatesCursor);
       while (directionDistanceEstimatesCursor.moveToNext()) {
         DirectionDistanceEstimate directionDistanceEstimate = CogSurverProvider
             .createDirectionDistanceEstimate(directionDistanceEstimatesCursor);
@@ -253,6 +255,7 @@ public class MainActivity extends Activity implements OnClickListener {
       Cursor travelFixesCursor = getContentResolver().query(
           TravelFixesColumns.CONTENT_URI, null,
           TravelFixesColumns.USER_ID + "=17", null, null);
+      startManagingCursor(travelFixesCursor);
       Log.d("CogSurvDroid", "SyncAsyncTask uploading "
           + travelFixesCursor.getCount() + " travelFixes ");
       while (travelFixesCursor.moveToNext()) {
@@ -315,6 +318,7 @@ public class MainActivity extends Activity implements OnClickListener {
       Cursor cursor = null;
       try {
         cursor = ((CogSurvDroid) getApplication()).readLandmarks(true);
+        startManagingCursor(cursor);
       } catch (Exception e) {
         mReason = e;
       }
@@ -326,6 +330,7 @@ public class MainActivity extends Activity implements OnClickListener {
       if (cursor == null) {
         NotificationsUtil.ToastReasonForFailure(MainActivity.this, mReason);
       } else {
+        cursor.close();
         ((CogSurvDroid) getApplication()).dismissProgressDialog();
         // now we can enable the landmarkVisitButton
         // landmarkVisitButton.setEnabled(true);
