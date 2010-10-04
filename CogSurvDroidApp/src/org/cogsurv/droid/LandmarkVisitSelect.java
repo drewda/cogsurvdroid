@@ -59,6 +59,7 @@ public class LandmarkVisitSelect extends ListActivity {
 
     // query for person's landmarks
     landmarksCursor = ((CogSurvDroid) getApplication()).readLandmarks(false);
+    startManagingCursor(landmarksCursor);
 
     SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, // Context.
         android.R.layout.simple_list_item_1, // Specify the row template to use
@@ -82,6 +83,7 @@ public class LandmarkVisitSelect extends ListActivity {
     estimatesTargetSet = new Group<Landmark>();
     Landmark landmark;
     Cursor landmarksCursor = ((CogSurvDroid) getApplication()).readLandmarks(false);
+    startManagingCursor(landmarksCursor);
     while (landmarksCursor.moveToNext()) {
       landmark = CogSurverProvider.createLandmark(landmarksCursor);
       // we don't want to add the startLandmark to the estimatesTargetSet
