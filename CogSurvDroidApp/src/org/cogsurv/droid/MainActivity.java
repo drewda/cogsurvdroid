@@ -31,6 +31,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements OnClickListener {
   public static final String TAG = "MainActivity";
@@ -44,6 +45,14 @@ public class MainActivity extends Activity implements OnClickListener {
       finish();
     }
   };
+  private BroadcastReceiver mUserDetailsReadyReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      if (DEBUG) Log.d(TAG, "onReceive: " + intent);
+      TextView helloUserText = (TextView) findViewById(R.id.hello_user_text);
+      helloUserText.setText("Hello " + ((CogSurvDroid) getApplication()).getCurrentUser().getFullName());
+    }
+  };
 
   private View landmarkVisitButton;
 
@@ -55,6 +64,8 @@ public class MainActivity extends Activity implements OnClickListener {
     /* setDefaultKeyMode(Activity.DEFAULT_KEYS_SEARCH_LOCAL); */
     registerReceiver(mLoggedOutReceiver, new IntentFilter(
         CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
+    registerReceiver(mUserDetailsReadyReceiver, new IntentFilter(
+        CogSurvDroid.INTENT_USER_DETAILS_READY));
 
     // Don't start the main activity if we don't have credentials
     if (!((CogSurvDroid) getApplication()).isReady()) {
@@ -84,6 +95,7 @@ public class MainActivity extends Activity implements OnClickListener {
   public void onDestroy() {
     super.onDestroy();
     unregisterReceiver(mLoggedOutReceiver);
+    unregisterReceiver(mUserDetailsReadyReceiver);
   }
 
   private static final int MENU_SWITCH_USER = 1;

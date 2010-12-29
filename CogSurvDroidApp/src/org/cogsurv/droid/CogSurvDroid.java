@@ -62,6 +62,7 @@ public class CogSurvDroid extends Application {
 
   public static final String INTENT_ACTION_LOGGED_OUT = "org.cogsurv.droid.intent.action.LOGGED_OUT";
   public static final String INTENT_ACTION_LOGGED_IN = "org.cogsurv.droid.intent.action.LOGGED_IN";
+  public static final String INTENT_USER_DETAILS_READY = "org.cogsurv.droid.intent.action.USER_DETAILS_READY";
 
   private String mVersion = null;
 
@@ -71,6 +72,8 @@ public class CogSurvDroid extends Application {
   private SharedPreferences mPrefs;
 
   private CogSurver mCogSurver;
+  
+  private User mCurrentUser;
 
   public Group<Landmark> mEstimatesTargetSet;
 
@@ -106,6 +109,10 @@ public class CogSurvDroid extends Application {
 
   public CogSurver getCogSurver() {
     return mCogSurver;
+  }
+  
+  public User getCurrentUser() {
+    return mCurrentUser;
   }
 
   public String getUserId() {
@@ -225,7 +232,9 @@ public class CogSurvDroid extends Application {
           Editor editor = mPrefs.edit();
           Preferences.storeUser(editor, user);
           editor.commit();
-
+          
+          mCurrentUser = user;
+          sendBroadcast(new Intent(INTENT_USER_DETAILS_READY));
         } catch (CogSurvError e) {
           if (DEBUG)
             Log.d(TAG, "CogSurvError", e);
