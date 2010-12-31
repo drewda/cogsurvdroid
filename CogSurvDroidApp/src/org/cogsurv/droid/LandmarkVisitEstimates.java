@@ -59,6 +59,7 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 
   private Button recordEstimatesButton;
 
+  private AlertDialog alert;
   private boolean waveDialogShown = false;
 
   /* compass */
@@ -242,11 +243,19 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
                   dialog.cancel();
                 }
               });
-      AlertDialog alert = builder.create();
+      alert = builder.create();
       alert.show();
     }
   }
 
+  @Override
+  protected void onPause() {
+    super.onPause();
+    // if the phone is rotating and redrawing with the figure-8 calibration
+    // alert still showing, we'll need to close it
+    alert.dismiss();
+  }
+  
   @Override
   protected void onDestroy() {
     unregisterReceiver(mLoggedOutReceiver);
