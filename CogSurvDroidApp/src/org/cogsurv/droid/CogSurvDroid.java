@@ -71,6 +71,8 @@ public class CogSurvDroid extends Application {
   private HandlerThread mTaskThread;
 
   private SharedPreferences mPrefs;
+  
+  private BestLocationListener mBestLocationListener = new BestLocationListener();
 
   private CogSurver mCogSurver;
   
@@ -127,6 +129,45 @@ public class CogSurvDroid extends Application {
     } else {
       return "";
     }
+  }
+  
+  public BestLocationListener requestLocationUpdates(boolean gps) {
+      mBestLocationListener.register(
+              (LocationManager) getSystemService(Context.LOCATION_SERVICE), gps);
+      return mBestLocationListener;
+  }
+  
+  public BestLocationListener requestLocationUpdates(Observer observer) {
+      mBestLocationListener.addObserver(observer);
+      mBestLocationListener.register(
+              (LocationManager) getSystemService(Context.LOCATION_SERVICE), true);
+      return mBestLocationListener;
+  }
+  
+  public void removeLocationUpdates() {
+      mBestLocationListener
+              .unregister((LocationManager) getSystemService(Context.LOCATION_SERVICE));
+  }
+  
+  public void removeLocationUpdates(Observer observer) {
+      mBestLocationListener.deleteObserver(observer);
+      this.removeLocationUpdates();
+  }
+  
+  public Location getLastKnownLocation() {
+      return mBestLocationListener.getLastKnownLocation();
+  }
+  
+  public Location getLastKnownLocationOrThrow() throws LocationException {
+      Location location = mBestLocationListener.getLastKnownLocation();
+      if (location == null) {
+          throw new LocationException();
+      }
+      return location;
+  }
+  
+  public void clearLastKnownLocation() {
+      mBestLocationListener.clearLastKnownLocation();
   }
 
   public void requestStartService() {
@@ -344,6 +385,28 @@ public class CogSurvDroid extends Application {
 
     return getContentResolver().query(LandmarksColumns.CONTENT_URI, null,
         LandmarksColumns.USER_ID + "=" + getUserId(), null, null);
+  }
+  
+  public Landmark markNewLandmark(Landmark landmark) {
+    Log.d("CogSurv", "CogSurvDroid.markNewLandmark");
+    try {
+      landmark = mCogSurver.createLandmark(landmark);
+    } catch (CogSurvCredentialsException e) {
+      e.printStackTrace();
+    } catch (CogSurvError e) {
+      e.printStackTrace();
+    } catch (CogSurvException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    landmark.setUserId(Integer.valueOf(getUserId()));
+    Uri uri = getContentResolver().insert(LandmarksColumns.CONTENT_URI, 
+        CogSurverProvider.createContentValues(landmark));
+    long localId = Long.parseLong(uri.getLastPathSegment());
+    Log.d("CogSurv", "markNewLandmark: insert into ContentProvider: localId = "
+        + localId);    
+    return landmark;
   }
 
   /* LANDMARK VISIT */

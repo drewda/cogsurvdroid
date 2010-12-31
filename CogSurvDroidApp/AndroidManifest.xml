@@ -32,6 +32,9 @@
 			android:name=".LandmarkVisitEstimates"
 			android:launchMode="singleInstance" />
 		<activity
+		  android:name=".AddLandmarkActivity"
+		  android:launchMode="singleInstance" />
+		<activity
 		  android:name=".PreferenceActivity"
 		  android:launchMode="singleInstance" />
 		<service

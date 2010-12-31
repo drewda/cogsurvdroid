@@ -2,7 +2,6 @@ package org.cogsurv.droid;
 
 import java.io.IOException;
 
-import org.cogsurv.cogsurver.CogSurver;
 import org.cogsurv.cogsurver.content.CogSurverProvider;
 import org.cogsurv.cogsurver.content.DirectionDistanceEstimatesColumns;
 import org.cogsurv.cogsurver.content.LandmarkVisitsColumns;
@@ -14,7 +13,6 @@ import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
 import org.cogsurv.cogsurver.types.LandmarkVisit;
 import org.cogsurv.cogsurver.types.TravelFix;
 import org.cogsurv.droid.app.TravelLogService;
-import org.cogsurv.droid.preferences.Preferences;
 import org.cogsurv.droid.util.NotificationsUtil;
 
 import android.app.Activity;
@@ -25,12 +23,12 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements OnClickListener {
@@ -54,7 +52,7 @@ public class MainActivity extends Activity implements OnClickListener {
     }
   };
 
-  private View landmarkVisitButton;
+  private Button landmarkVisitButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +85,11 @@ public class MainActivity extends Activity implements OnClickListener {
 
     setContentView(R.layout.main_activity);
 
-    landmarkVisitButton = this.findViewById(R.id.landmark_visit_button);
+    landmarkVisitButton = (Button) findViewById(R.id.landmark_visit_button);
     landmarkVisitButton.setOnClickListener(this);
+    Button addLandmarkButton = (Button) findViewById(R.id.add_landmark_button);
+    addLandmarkButton.setOnClickListener(this);
+    
   }
 
   @Override
@@ -180,6 +181,10 @@ public class MainActivity extends Activity implements OnClickListener {
       Log.v("CogSurv", "landmark_visit_button clicked");
       Intent i = new Intent(this, LandmarkVisitSelect.class);
       startActivity(i);
+      break;
+    case R.id.add_landmark_button:
+      Log.v("CogSurv", "add_landmark_button clicked");
+      startActivity(new Intent(this, AddLandmarkActivity.class));
       break;
     }
   }

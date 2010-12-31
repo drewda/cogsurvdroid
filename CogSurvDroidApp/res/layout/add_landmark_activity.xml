@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent" android:orientation="vertical">
+
+	<TextView android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:text="Mark a New Landmark"
+		android:gravity="center" android:textAppearance="@android:style/TextAppearance.Large"
+		android:paddingTop="6px" android:paddingBottom="12px" />
+
+	<TextView android:text="Is this your first time visiting a place with Cognitive Surveyor? If so, it's time to mark it as a new landmark."
+		android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center" android:paddingBottom="12pt" android:paddingTop="6pt"></TextView>
+
+<TextView android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Name"></TextView><EditText android:layout_height="wrap_content" android:id="@+id/new_landmark_name_edit_text" android:layout_width="fill_parent"></EditText>
+<Button android:layout_gravity="center" android:text="Mark It" android:layout_height="wrap_content" android:id="@+id/mark_it_button" android:layout_width="wrap_content"></Button>
+
+</LinearLayout>
