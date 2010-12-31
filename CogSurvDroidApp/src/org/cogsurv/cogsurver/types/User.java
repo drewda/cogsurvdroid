@@ -6,6 +6,8 @@ public class User implements CogSurvType {
     private String lastName;
     private String email;
     private String foursquareUserId;
+    private boolean travelLogEnabled;
+    private int travelLogInterval;
     
     public String getId() {
         return mId;
@@ -39,5 +41,17 @@ public class User implements CogSurvType {
     }
     public void setFoursquareUserId(String foursquareUserId) {
         this.foursquareUserId = foursquareUserId;
+    }
+    public boolean getTravelLogEnabled() {
+      return travelLogEnabled;
+    }
+    public void setTravelLogEnabled(boolean travelLogEnabled) {
+      this.travelLogEnabled = travelLogEnabled;
+    }
+    public int getTravelLogInterval() {
+      return travelLogInterval;
+    }
+    public void setTravelLogInterval(int travelLogInterval) {
+      this.travelLogInterval = travelLogInterval;
     }
 }

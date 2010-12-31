@@ -29,12 +29,7 @@ public class Preferences {
     public static final String PREFERENCE_IMMEDIATE_CHECKIN = "immediate_checkin";
 
     // Hacks for preference activity extra UI elements.
-    public static final String PREFERENCE_ADVANCED_SETTINGS = "advanced_settings";
-    public static final String PREFERENCE_FRIEND_REQUESTS = "friend_requests";
-    public static final String PREFERENCE_FRIEND_ADD = "friend_add";
-    public static final String PREFERENCE_CITY_NAME = "city_name";
     public static final String PREFERENCE_LOGOUT = "logout";
-    public static final String PREFERENCE_SEND_FEEDBACK = "send_feedback";
 
     // Credentials related preferences
     public static final String PREFERENCE_LOGIN = "login";
@@ -45,6 +40,9 @@ public class Preferences {
     
     // Last used distance unit
     private static final String PREFERENCE_LAST_USED_DISTANCE_UNIT = "last_used_distance_unit";
+    
+    public static final String PREFERENCE_TRAVEL_LOG_ENABLED = "travel_log_enabled";
+    public static final String PREFERENCE_TRAVEL_LOG_INTERVAL = "travel_log_interval";
 
   public static boolean loginUser(CogSurver cogSurver, String login,
       String password, Editor editor) throws CogSurvCredentialsException,
@@ -100,5 +98,23 @@ public class Preferences {
     
     public static int getLastUsedDistanceUnit(SharedPreferences prefs) {
       return prefs.getInt(PREFERENCE_LAST_USED_DISTANCE_UNIT, 0);
+    }
+    
+    /**
+     * 
+     * @param editor
+     * @param travelLogEnabled
+     * @param travelLogInterval interval in milliseconds
+     */
+    public static void setTravelLogPreferences(final Editor editor, Boolean travelLogEnabled, String travelLogInterval) {
+      editor.putBoolean(PREFERENCE_TRAVEL_LOG_ENABLED, travelLogEnabled);
+      editor.putString(PREFERENCE_TRAVEL_LOG_INTERVAL, travelLogInterval);
+      editor.commit();
+    }
+    public static boolean getTravelLogEnabled(SharedPreferences prefs) {
+      return prefs.getBoolean(PREFERENCE_TRAVEL_LOG_ENABLED, false);
+    }
+    public static String getTravelLogInterval(SharedPreferences prefs) {
+      return prefs.getString(PREFERENCE_TRAVEL_LOG_INTERVAL, "18000");
     }
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<PreferenceCategory android:title="Travel Log">
+		<CheckBoxPreference android:key="travel_log_enabled"
+			android:persistent="true" android:title="Travel log"
+			android:summaryOn="Travel log is enabled and will record your position"
+			android:summaryOff="Travel log is disabled; won't record your position"
+			android:defaultValue="false" />
+		<ListPreference android:key="travel_log_interval"
+			android:persistent="true" android:title="Travel log interval"
+			android:summary="How frequently should the travel log record a GPS fix?"
+			android:entries="@array/travel_log_intervals" android:entryValues="@array/travel_log_intervals_millisecond_values"
+			android:defaultValue="180000" />
+	</PreferenceCategory>
+
+	<PreferenceCategory android:title="Other">
+		<Preference android:key="logout" android:title="Log-out"
+			android:summary="Sign out of Cognitive Surveyor" />
+	</PreferenceCategory>
+</PreferenceScreen>

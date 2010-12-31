@@ -9,7 +9,7 @@ import java.util.TimerTask;
 
 import org.cogsurv.cogsurver.types.TravelFix;
 import org.cogsurv.droid.CogSurvDroid;
-import org.cogsurv.droid.CogSurvDroidSettings;
+import org.cogsurv.droid.preferences.Preferences;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -30,6 +30,8 @@ import android.util.Log;
  * 
  */
 public class TravelLogService extends Service { 
+  private static String         TAG = "TravelLogService";
+  private int                   travel_log_interval; // milliseconds
   private Timer                 timer       = new Timer();
 
   private PowerManager          pm;
@@ -66,9 +68,6 @@ public class TravelLogService extends Service {
   public void onCreate() {
     registerReceiver(mLoggedOutReceiver, new IntentFilter(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
     
-    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, CogSurvDroidSettings.TRAVEL_LOG_INTERVAL, 0, gpsListener);
-    
     pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
     wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TravelLogServiceLock");
     wl.acquire();
@@ -76,8 +75,16 @@ public class TravelLogService extends Service {
   
   @Override
   public void onStart(Intent intent, int startId) {
-    Log.d("CogSurv", "TravelLogService.onStart");
+    Log.d(TAG, "TravelLogService.onStart");
     super.onStart(intent, startId);
+    
+    Bundle extras = intent.getExtras();
+    travel_log_interval = Integer.parseInt(extras.getString(Preferences.PREFERENCE_TRAVEL_LOG_INTERVAL));
+    
+    Log.d(TAG, "logging at interval: " + travel_log_interval + " milliseconds");
+    
+    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, travel_log_interval, 0, gpsListener);
     
     timer.scheduleAtFixedRate(
         new TimerTask() {
@@ -88,7 +95,7 @@ public class TravelLogService extends Service {
           }
         },
         0,
-        CogSurvDroidSettings.TRAVEL_LOG_INTERVAL);
+        travel_log_interval);
     
     //pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
     //wl.acquire();
@@ -101,6 +108,7 @@ public class TravelLogService extends Service {
     wl.release();
     unregisterReceiver(mLoggedOutReceiver);
     super.onDestroy();
+    Log.d(TAG, "TravelLogService.onDestroy");
   }
 
   @Override

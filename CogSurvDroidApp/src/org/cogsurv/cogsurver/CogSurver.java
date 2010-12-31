@@ -60,6 +60,10 @@ public class CogSurver {
       CogSurvError, IOException {
     return mCogSurvV1.readUser();
   }
+  
+  public User updateUserPreferences(User user) throws CogSurvException, CogSurvCredentialsException, CogSurvError, IOException {
+    return mCogSurvV1.updateUserPreferences(user);
+  }
 
   public Landmark createLandmark(Landmark landmark) throws CogSurvException,
       CogSurvCredentialsException, CogSurvError, IOException {

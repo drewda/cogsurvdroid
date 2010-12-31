@@ -39,6 +39,10 @@ public class UserParser extends AbstractParser<User> {
                 user.setFoursquareUserId(parser.nextText());
             } else if ("email".equals(name)) {
                 user.setEmail(parser.nextText());
+            } else if ("travel-log-service-enabled".equals(name)) {
+                user.setTravelLogEnabled(Boolean.parseBoolean(parser.nextText()));
+            } else if ("travel-log-service-interval".equals(name)) {
+                user.setTravelLogInterval(Integer.parseInt(parser.nextText()));
             } else {
                 // Consume something we don't understand.
                 if (DEBUG) LOG.log(Level.FINE, "Found tag that we don't recognize: " + name);

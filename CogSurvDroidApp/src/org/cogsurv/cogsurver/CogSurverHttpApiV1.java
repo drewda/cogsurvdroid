@@ -41,6 +41,7 @@ class CogSurverHttpApiV1 {
     private static final boolean DEBUG = CogSurver.DEBUG;
 
     private static final String URL_API_USERS = "/users.xml";
+    private static final String URL_API_USER = "/users/";
     private static final String URL_API_TRAVEL_FIXES = "/travel_fixes.xml";
     private static final String URL_API_LANDMARKS = "/landmarks.xml";
     private static final String URL_API_LANDMARK_VISITS = "/landmark_visits.xml";
@@ -87,10 +88,20 @@ class CogSurverHttpApiV1 {
         return users.get(0);
     }
     
+    User updateUserPreferences(User user) throws CogSurvException, CogSurvCredentialsException, CogSurvError, IOException {
+      HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_USER + user.getId() + ".xml"), 
+          new BasicNameValuePair("user[travel_log_service_enabled]", String.valueOf(user.getTravelLogEnabled())),
+          new BasicNameValuePair("user[travel_log_service_interval]", String.valueOf(user.getTravelLogInterval())),
+          new BasicNameValuePair("_method", "put")
+      );
+      User returnUser = (User) mHttpApi.doHttpRequest(httpPost, new UserParser());
+      return returnUser;
+    }
+    
     Landmark createLandmark(Landmark landmark)
             throws CogSurvException, CogSurvCredentialsException, CogSurvError, IOException {
         HttpPost httpPost = mHttpApi.createHttpPost(fullUrl(URL_API_LANDMARKS), 
-                new BasicNameValuePair("landmark[foursquare-venue-id]", landmark.getFoursquareVenueId()),
+                new BasicNameValuePair("landmark[foursquare_venue_id]", landmark.getFoursquareVenueId()),
                 new BasicNameValuePair("landmark[name]", landmark.getName()),
                 new BasicNameValuePair("landmark[address]", landmark.getAddress()),
                 new BasicNameValuePair("landmark[city]", landmark.getCity()),

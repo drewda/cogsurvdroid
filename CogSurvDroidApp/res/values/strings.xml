@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">Cognitive Surveyor</string>
-  <string name="menu_switch_user">Switch User</string>
   <string name="menu_sync">Sync</string>
+  <string name="menu_preferences">Preferences</string>
   <string name="menu_shutdown">Shutdown</string>
   <string name="login_get_started">Log In</string>
   <string name="login_get_started_more">Got a Cog Surv account? We just need your e-mail address and password</string>

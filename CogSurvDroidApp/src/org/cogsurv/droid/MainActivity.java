@@ -98,19 +98,19 @@ public class MainActivity extends Activity implements OnClickListener {
     unregisterReceiver(mUserDetailsReadyReceiver);
   }
 
-  private static final int MENU_SWITCH_USER = 1;
-  private static final int MENU_SYNC = 2;
+  private static final int MENU_SYNC = 1;
+  private static final int MENU_PREFERENCES = 2;
   private static final int MENU_SHUTDOWN = 3;
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     super.onCreateOptionsMenu(menu);
 
-    menu.add(Menu.NONE, MENU_SWITCH_USER, 1, R.string.menu_switch_user)
-        .setIcon(android.R.drawable.ic_menu_edit);
-
-    menu.add(Menu.NONE, MENU_SYNC, 2, R.string.menu_sync).setIcon(
+    menu.add(Menu.NONE, MENU_SYNC, 1, R.string.menu_sync).setIcon(
         android.R.drawable.ic_menu_upload);
+    
+    menu.add(Menu.NONE, MENU_PREFERENCES, 2, R.string.menu_preferences)
+    .setIcon(android.R.drawable.ic_menu_edit).setIntent(new Intent(this, PreferenceActivity.class));
 
     menu.add(Menu.NONE, MENU_SHUTDOWN, 3, R.string.menu_shutdown).setIcon(
         android.R.drawable.ic_menu_close_clear_cancel);
@@ -128,19 +128,10 @@ public class MainActivity extends Activity implements OnClickListener {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
-    case MENU_SWITCH_USER:
-      ((CogSurvDroid) getApplication()).landmarksLoaded = false;
-      Preferences.logoutUser(((CogSurvDroid) getApplication()).getCogSurver(),
-          PreferenceManager
-              .getDefaultSharedPreferences(getApplicationContext()).edit());
-      sendBroadcast(new Intent(CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
-      finish();
-      // org.cogsurv.droid.preferences.Preferences.logoutUser(((CogSurvDroid)
-      // getApplication()).getCogSurver(),
-      // PreferenceManager.getDefaultSharedPreferences(this).edit())
     case MENU_SYNC:
       //new SyncAsyncTask().execute();
       return true;
+    // case MENU_PREFERENCES: handled with intent
     case MENU_SHUTDOWN:
       // (1) stop TravelLogService
       Intent serviceIntent = new Intent(this, TravelLogService.class);

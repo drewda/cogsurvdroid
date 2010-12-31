@@ -49,6 +49,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 public class CogSurvDroid extends Application {
   public static final String TAG = "CogSurvDroid";
@@ -231,6 +232,7 @@ public class CogSurvDroid extends Application {
           User user = getCogSurver().readUser();
           Editor editor = mPrefs.edit();
           Preferences.storeUser(editor, user);
+          Preferences.setTravelLogPreferences(editor, user.getTravelLogEnabled(), String.valueOf(user.getTravelLogInterval()));
           editor.commit();
           
           mCurrentUser = user;
@@ -248,15 +250,34 @@ public class CogSurvDroid extends Application {
         return;
 
       case MESSAGE_START_SERVICE:
-        Intent serviceIntent = new Intent(CogSurvDroid.this,
-            TravelLogService.class);
-        startService(serviceIntent);
+        if (Preferences.getTravelLogEnabled(mPrefs)) {
+          Intent serviceIntent = new Intent(CogSurvDroid.this,
+              TravelLogService.class);
+          serviceIntent.putExtra(Preferences.PREFERENCE_TRAVEL_LOG_INTERVAL, Preferences.getTravelLogInterval(mPrefs));
+          startService(serviceIntent); 
+        }
         return;
       }
     }
   }
 
   /* DATA HANDLERS */
+  public boolean updateUserPreferences(User user) {
+    Log.d("CogSurv", "CogSurvDroid.updateUserPreferences");
+      try {
+        user = mCogSurver.updateUserPreferences(user);
+      } catch (CogSurvCredentialsException e) {
+        e.printStackTrace();
+      } catch (CogSurvError e) {
+        e.printStackTrace();
+      } catch (CogSurvException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      return true;
+  }
+  
   /* TRAVEL FIX */
   public boolean recordTravelFix(TravelFix travelFix) {
     Log.d("CogSurv", "CogSurvDroid.recordTravelFix");
