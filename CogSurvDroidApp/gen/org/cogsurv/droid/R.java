@@ -38,34 +38,39 @@ public final class R {
         public static final int main_logo=0x7f020002;
     }
     public static final class id {
-        public static final int button=0x7f080013;
-        public static final int distance_entry=0x7f080005;
-        public static final int distance_minus_hundred_button=0x7f08000c;
-        public static final int distance_minus_one_button=0x7f08000e;
-        public static final int distance_minus_ten_button=0x7f08000d;
-        public static final int distance_minus_tenth_button=0x7f08000f;
-        public static final int distance_number_edit_text=0x7f08000a;
-        public static final int distance_plus_hundred_button=0x7f080006;
-        public static final int distance_plus_one_button=0x7f080008;
-        public static final int distance_plus_ten_button=0x7f080007;
-        public static final int distance_plus_tenth_button=0x7f080009;
-        public static final int distance_prompt=0x7f080004;
-        public static final int distance_units_spinner=0x7f08000b;
-        public static final int estimates_feedback=0x7f080000;
-        public static final int hello_user_text=0x7f080014;
-        public static final int landmark_visit_button=0x7f080015;
-        public static final int main_prompt=0x7f080002;
-        public static final int message=0x7f080001;
-        public static final int passwordEditText=0x7f080012;
-        public static final int phoneEditText=0x7f080011;
-        public static final int record_estimates_button=0x7f080010;
-        public static final int target_landmark_header=0x7f080003;
+        public static final int TextView01=0x7f080000;
+        public static final int add_landmark_button=0x7f080019;
+        public static final int button=0x7f080016;
+        public static final int distance_entry=0x7f080008;
+        public static final int distance_minus_hundred_button=0x7f08000f;
+        public static final int distance_minus_one_button=0x7f080011;
+        public static final int distance_minus_ten_button=0x7f080010;
+        public static final int distance_minus_tenth_button=0x7f080012;
+        public static final int distance_number_edit_text=0x7f08000d;
+        public static final int distance_plus_hundred_button=0x7f080009;
+        public static final int distance_plus_one_button=0x7f08000b;
+        public static final int distance_plus_ten_button=0x7f08000a;
+        public static final int distance_plus_tenth_button=0x7f08000c;
+        public static final int distance_prompt=0x7f080007;
+        public static final int distance_units_spinner=0x7f08000e;
+        public static final int estimates_feedback=0x7f080003;
+        public static final int hello_user_text=0x7f080017;
+        public static final int landmark_visit_button=0x7f080018;
+        public static final int main_prompt=0x7f080005;
+        public static final int mark_it_button=0x7f080002;
+        public static final int message=0x7f080004;
+        public static final int new_landmark_name_edit_text=0x7f080001;
+        public static final int passwordEditText=0x7f080015;
+        public static final int phoneEditText=0x7f080014;
+        public static final int record_estimates_button=0x7f080013;
+        public static final int target_landmark_header=0x7f080006;
     }
     public static final class layout {
-        public static final int landmark_visit_estimates=0x7f030000;
-        public static final int landmark_visit_select=0x7f030001;
-        public static final int login_activity=0x7f030002;
-        public static final int main_activity=0x7f030003;
+        public static final int add_landmark_activity=0x7f030000;
+        public static final int landmark_visit_estimates=0x7f030001;
+        public static final int landmark_visit_select=0x7f030002;
+        public static final int login_activity=0x7f030003;
+        public static final int main_activity=0x7f030004;
     }
     public static final class string {
         public static final int add_a_tip=0x7f07000f;

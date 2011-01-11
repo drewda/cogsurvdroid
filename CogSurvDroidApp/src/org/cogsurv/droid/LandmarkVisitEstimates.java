@@ -1,10 +1,14 @@
 package org.cogsurv.droid;
 
 import java.text.DecimalFormat;
+import java.util.Collections;
 import java.util.Date;
 
+import org.cogsurv.cogsurver.content.CogSurverProvider;
 import org.cogsurv.cogsurver.types.DirectionDistanceEstimate;
+import org.cogsurv.cogsurver.types.Group;
 import org.cogsurv.cogsurver.types.Landmark;
+import org.cogsurv.cogsurver.types.LandmarkVisit;
 import org.cogsurv.droid.preferences.Preferences;
 import org.cogsurv.droid.util.NotificationsUtil;
 
@@ -20,6 +24,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.hardware.GeomagneticField;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -31,6 +36,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -43,6 +49,8 @@ import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
 public class LandmarkVisitEstimates extends Activity implements OnClickListener {
+  private boolean startedLandmarkVisit = false;
+  
   private int startLandmarkId;
   private int landmarkVisitId;
   private Landmark currentTargetLandmark;
@@ -70,8 +78,8 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
     }
 
     public void onSensorChanged(SensorEvent event) {
-      if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE
-          || event.accuracy == SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
+      if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
+//          || event.accuracy == SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
         Toast
             .makeText(
                 getBaseContext(),
@@ -124,6 +132,13 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 
     registerReceiver(mLoggedOutReceiver, new IntentFilter(
         CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
+    
+    if (!startedLandmarkVisit) {
+      /* extras attached to intent by LandmarkVisitSelect */
+      Bundle extras = this.getIntent().getExtras();
+      startLandmarkId = extras.getInt("startLandmarkId");
+      startLandmarkVisit();
+    }
 
     /* set up compass */
     sensorManager = (SensorManager) this
@@ -150,11 +165,6 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
         new Date().getTime());
 
     setContentView(R.layout.landmark_visit_estimates);
-
-    /* extras attached to intent by LandmarkVisitSelect */
-    Bundle extras = this.getIntent().getExtras();
-    startLandmarkId = extras.getInt("startLandmarkId");
-    landmarkVisitId = extras.getInt("landmarkVisitId");
 
     // set up view for survey estimate
     currentTargetLandmark = ((CogSurvDroid) getApplication()).mEstimatesTargetSet
@@ -345,27 +355,132 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
   public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
   }
+  
+  /* START LANDMARK VISIT */
+  public void startLandmarkVisit() {
+    // assemble estimatesTargetSet
+    Group<Landmark> estimatesTargetSet = new Group<Landmark>();
+    Landmark targetLandmark;
+    Cursor landmarksCursor = ((CogSurvDroid) getApplication()).readLandmarks(false);
+    startManagingCursor(landmarksCursor);
+    while (landmarksCursor.moveToNext()) {
+      targetLandmark = CogSurverProvider.createLandmark(landmarksCursor);
+      // we don't want to add the startLandmark to the estimatesTargetSet
+      if (targetLandmark.getServerId() != startLandmarkId) {
+        estimatesTargetSet.add(targetLandmark);
+      }
+    }
+    Collections.shuffle(estimatesTargetSet);
+    // add point-to-north command
+    targetLandmark = new Landmark();
+    targetLandmark.setName(CogSurvDroidSettings.POINT_TO_NORTH_COMMAND);
+    estimatesTargetSet.add(targetLandmark);
+    // set the estimatesTargetSet, which LandmarkVisitEstimates will pick up
+    ((CogSurvDroid) getApplication()).mEstimatesTargetSet = estimatesTargetSet;
 
-  /* RECORD DIRECTION DISTANCE ESTIMATE */
-  private Dialog mProgressDialog;
+    // create landmarkVisit
+    LandmarkVisit landmarkVisit = new LandmarkVisit();
+    landmarkVisit.setDatetime(new Date());
+    landmarkVisit.setLandmarkId(startLandmarkId);
+    new RecordLandmarkVisitAsyncTask().execute(landmarkVisit);
+
+    Log.v(CogSurvDroid.TAG, "landmark selected: " + startLandmarkId + "; number of targets: "
+        + estimatesTargetSet.size());
+  }
+  /* RECORD LANDMARK VISIT */
+  private Dialog mLandmarkVisitProgressDialog;
 
   private Dialog showProgressDialog() {
-    if (mProgressDialog == null) {
+    if (mLandmarkVisitProgressDialog == null) {
+      ProgressDialog dialog = new ProgressDialog(this);
+      dialog.setCancelable(true);
+      dialog.setIndeterminate(true);
+      dialog.setTitle("Syncing");
+      dialog.setIcon(android.R.drawable.ic_dialog_info);
+      dialog.setMessage("Please wait while we record your landmark visit.");
+      mLandmarkVisitProgressDialog = dialog;
+    }
+    mLandmarkVisitProgressDialog.show();
+    return mLandmarkVisitProgressDialog;
+  }
+
+  private void dismissLandmarkVisitProgressDialog() {
+    try {
+      mLandmarkVisitProgressDialog.dismiss();
+    } catch (IllegalArgumentException e) {
+      // We don't mind. android cleared it for us.
+    }
+  }
+
+  private class RecordLandmarkVisitAsyncTask extends AsyncTask<LandmarkVisit, Void, LandmarkVisit> {
+    private Exception mReason;
+
+    @Override
+    public void onPreExecute() {
+      showProgressDialog();
+    }
+
+    @Override
+    protected LandmarkVisit doInBackground(LandmarkVisit... params) {
+      LandmarkVisit landmarkVisit = null;
+      try {
+        landmarkVisit = ((CogSurvDroid) getApplication()).recordLandmarkVisit(params[0]);
+      } catch (Exception e) {
+        mReason = e;
+      }
+      return landmarkVisit;
+    }
+
+    @Override
+    public void onPostExecute(LandmarkVisit landmarkVisit) {
+      if (landmarkVisit == null) {
+        NotificationsUtil.ToastReasonForFailure(LandmarkVisitEstimates.this, mReason);
+      } else {
+        dismissLandmarkVisitProgressDialog();
+
+        if (((CogSurvDroid) getApplication()).mEstimatesTargetSet.size() > 0) {
+          landmarkVisitId = landmarkVisit.getServerId();
+          startedLandmarkVisit = true;
+        } else {
+          Toast.makeText(LandmarkVisitEstimates.this,
+              "Error: There are no other landmarks to estimate directions and distances toward.",
+              Toast.LENGTH_LONG).show();
+          finish();
+        }
+
+        // Make sure the caller knows things worked out alright.
+        setResult(Activity.RESULT_OK);
+      }
+    }
+
+    @Override
+    protected void onCancelled() {
+      setVisible(true);
+      dismissLandmarkVisitProgressDialog();
+    }
+  }
+  
+
+  /* RECORD DIRECTION DISTANCE ESTIMATE */
+  private Dialog mEstimateProgressDialog;
+
+  private Dialog showEstimateProgressDialog() {
+    if (mEstimateProgressDialog == null) {
       ProgressDialog dialog = new ProgressDialog(this);
       dialog.setCancelable(true);
       dialog.setIndeterminate(true);
       dialog.setTitle("Syncing");
       dialog.setIcon(android.R.drawable.ic_dialog_info);
       dialog.setMessage("Please wait while we record your estimate.");
-      mProgressDialog = dialog;
+      mEstimateProgressDialog = dialog;
     }
-    mProgressDialog.show();
-    return mProgressDialog;
+    mEstimateProgressDialog.show();
+    return mEstimateProgressDialog;
   }
 
-  private void dismissProgressDialog() {
+  private void dismissEstimateProgressDialog() {
     try {
-      mProgressDialog.dismiss();
+      mEstimateProgressDialog.dismiss();
     } catch (IllegalArgumentException e) {
       // We don't mind. android cleared it for us.
     }
@@ -377,7 +492,7 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
 
     @Override
     public void onPreExecute() {
-      showProgressDialog();
+      showEstimateProgressDialog();
     }
 
     @Override
@@ -400,7 +515,7 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
         NotificationsUtil.ToastReasonForFailure(LandmarkVisitEstimates.this,
             mReason);
       } else {
-        dismissProgressDialog();
+        dismissEstimateProgressDialog();
 
         ((CogSurvDroid) getApplication()).mEstimatesTargetSet.remove(0);
 
@@ -453,7 +568,7 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
     @Override
     protected void onCancelled() {
       setVisible(true);
-      dismissProgressDialog();
+      dismissEstimateProgressDialog();
     }
   }
 }

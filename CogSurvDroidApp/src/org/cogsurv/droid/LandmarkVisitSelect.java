@@ -31,9 +31,7 @@ public class LandmarkVisitSelect extends ListActivity {
   private Cursor            landmarksCursor;
 
   private int               startLandmarkId;
-  private Group<Landmark>   estimatesTargetSet;
   private Cursor            c;
-  private LandmarkVisit     landmarkVisit;
 
   private BroadcastReceiver mLoggedOutReceiver = new BroadcastReceiver() {
                                                  @Override
@@ -78,118 +76,17 @@ public class LandmarkVisitSelect extends ListActivity {
   protected void onListItemClick(ListView parent, View v, int position, long id) {
     c = (Cursor) getListView().getItemAtPosition(position);
     startLandmarkId = c.getInt(c.getColumnIndexOrThrow(LandmarksColumns.SERVER_ID));
-
-    // assemble estimatesTargetSet
-    estimatesTargetSet = new Group<Landmark>();
-    Landmark landmark;
-    Cursor landmarksCursor = ((CogSurvDroid) getApplication()).readLandmarks(false);
-    startManagingCursor(landmarksCursor);
-    while (landmarksCursor.moveToNext()) {
-      landmark = CogSurverProvider.createLandmark(landmarksCursor);
-      // we don't want to add the startLandmark to the estimatesTargetSet
-      if (landmark.getServerId() != startLandmarkId) {
-        estimatesTargetSet.add(landmark);
-      }
-    }
-    Collections.shuffle(estimatesTargetSet);
-    // add point-to-north command
-    landmark = new Landmark();
-    landmark.setName(CogSurvDroidSettings.POINT_TO_NORTH_COMMAND);
-    estimatesTargetSet.add(landmark);
-    // set the estimatesTargetSet, which LandmarkVisitEstimates will pick up
-    ((CogSurvDroid) getApplication()).mEstimatesTargetSet = estimatesTargetSet;
-
-    // create landmarkVisit
-    landmarkVisit = new LandmarkVisit();
-    landmarkVisit.setDatetime(new Date());
-    landmarkVisit.setLandmarkId(startLandmarkId);
-    new RecordLandmarkVisitAsyncTask().execute(landmarkVisit);
-
-    Log.v(CogSurvDroid.TAG, "landmark selected: " + startLandmarkId + "; number of targets: "
-        + estimatesTargetSet.size());
+    
+    Intent i = new Intent(LandmarkVisitSelect.this, LandmarkVisitEstimates.class);
+    i.putExtra("startLandmarkId", startLandmarkId);
+    //i.putExtra("startLandmarkName", c.getString(c.getColumnIndexOrThrow(LandmarksColumns.NAME)));
+    startActivity(i);
+    finish();
   }
 
   @Override
   protected void onDestroy() {
     super.onDestroy();
     unregisterReceiver(mLoggedOutReceiver);
-  }
-
-  /* RECORD LANDMARK VISIT */
-  private Dialog mProgressDialog;
-
-  private Dialog showProgressDialog() {
-    if (mProgressDialog == null) {
-      ProgressDialog dialog = new ProgressDialog(this);
-      dialog.setCancelable(true);
-      dialog.setIndeterminate(true);
-      dialog.setTitle("Syncing");
-      dialog.setIcon(android.R.drawable.ic_dialog_info);
-      dialog.setMessage("Please wait while we record your landmark visit.");
-      mProgressDialog = dialog;
-    }
-    mProgressDialog.show();
-    return mProgressDialog;
-  }
-
-  private void dismissProgressDialog() {
-    try {
-      mProgressDialog.dismiss();
-    } catch (IllegalArgumentException e) {
-      // We don't mind. android cleared it for us.
-    }
-  }
-
-  private class RecordLandmarkVisitAsyncTask extends AsyncTask<LandmarkVisit, Void, LandmarkVisit> {
-    private Exception mReason;
-
-    @Override
-    public void onPreExecute() {
-      showProgressDialog();
-    }
-
-    @Override
-    protected LandmarkVisit doInBackground(LandmarkVisit... params) {
-      LandmarkVisit landmarkVisit = null;
-      try {
-        landmarkVisit = ((CogSurvDroid) getApplication()).recordLandmarkVisit(params[0]);
-      } catch (Exception e) {
-        mReason = e;
-      }
-      return landmarkVisit;
-    }
-
-    @Override
-    public void onPostExecute(LandmarkVisit landmarkVisit) {
-      if (landmarkVisit == null) {
-        NotificationsUtil.ToastReasonForFailure(LandmarkVisitSelect.this, mReason);
-      } else {
-        dismissProgressDialog();
-
-        if (estimatesTargetSet.size() > 0) {
-          Intent i = new Intent(LandmarkVisitSelect.this, LandmarkVisitEstimates.class);
-          i.putExtra("startLandmarkId", startLandmarkId);
-          i.putExtra("landmarkVisitId", landmarkVisit.getServerId());
-          i.putExtra("startLandmarkName", c.getString(c
-              .getColumnIndexOrThrow(LandmarksColumns.NAME)));
-          startActivity(i);
-          finish();
-        } else {
-          Toast.makeText(LandmarkVisitSelect.this,
-              "Error: There are no other landmarks to estimate directions and distances toward.",
-              Toast.LENGTH_LONG).show();
-          finish();
-        }
-
-        // Make sure the caller knows things worked out alright.
-        setResult(Activity.RESULT_OK);
-      }
-    }
-
-    @Override
-    protected void onCancelled() {
-      setVisible(true);
-      dismissProgressDialog();
-    }
   }
 }

@@ -5,6 +5,7 @@ import org.cogsurv.droid.error.LocationException;
 import org.cogsurv.droid.util.NotificationsUtil;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -49,7 +50,7 @@ public class AddLandmarkActivity extends Activity implements OnClickListener{
     }
   }
   
-  public class UploadLandmarkAsyncTask extends AsyncTask<Void, Void, Boolean> {
+  public class UploadLandmarkAsyncTask extends AsyncTask<Void, Void, Landmark> {
     private Exception mReason;
 
     @Override
@@ -61,7 +62,7 @@ public class AddLandmarkActivity extends Activity implements OnClickListener{
     }
 
     @Override
-    protected Boolean doInBackground(Void... params) {
+    protected Landmark doInBackground(Void... params) {
       Landmark landmark = new Landmark();
       landmark.setName(newLandmarkNameEditText.getText().toString());
       try {
@@ -71,13 +72,13 @@ public class AddLandmarkActivity extends Activity implements OnClickListener{
       } catch (LocationException e) {
         e.printStackTrace();
       }
-      ((CogSurvDroid) getApplication()).markNewLandmark(landmark);
-      return true;
+      landmark = ((CogSurvDroid) getApplication()).markNewLandmark(landmark);
+      return landmark;
     }
 
     @Override
-    public void onPostExecute(Boolean success) {
-      if (!success) {
+    public void onPostExecute(Landmark landmark) {
+      if (landmark == null) {
         NotificationsUtil.ToastReasonForFailure(AddLandmarkActivity.this, mReason);
       } else {
         ((CogSurvDroid) getApplication()).dismissProgressDialog();
@@ -85,8 +86,11 @@ public class AddLandmarkActivity extends Activity implements OnClickListener{
         Toast
         .makeText(
             getBaseContext(),
-            "Landmark has been marked. NOW IT'S TIME TO DO ESTIMATES...",
+            "Landmark has been marked.",
             Toast.LENGTH_LONG).show();
+        Intent i = new Intent(AddLandmarkActivity.this, LandmarkVisitEstimates.class);
+        i.putExtra("startLandmarkId", landmark.getServerId());
+        startActivity(i);
         finish();
       }
     }

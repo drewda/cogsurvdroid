@@ -49,7 +49,6 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 public class CogSurvDroid extends Application {
   public static final String TAG = "CogSurvDroid";
