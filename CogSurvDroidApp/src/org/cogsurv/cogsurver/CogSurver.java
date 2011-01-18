@@ -20,7 +20,7 @@ public class CogSurver {
   public static final boolean DEBUG                 = true;
   public static final boolean PARSER_DEBUG          = false;
 
-  public static final String  COGSURV_API_DOMAIN    = "v1.cogsurv.com"; // TODO: put this in an XML config file?
+  public static final String  COGSURV_API_DOMAIN    = "cogsurv.com"; // TODO: put this in an XML config file?
 
   public static final String  COGSURV_MOBILE_SIGNUP = "http://www.cogsurv.com/users/sign_up";
   public static final String  COGSURV_PREFERENCES   = "http://foursquare.com/settings";
@@ -99,13 +99,13 @@ public class CogSurver {
   }*/
 
   public static final CogSurverHttpApiV1 createHttpApi(String domain,
-      String clientVersion) {
+      String clientVersion, boolean ssl) {
     LOG.log(Level.INFO, "Using " + domain + " for requests.");
-    return new CogSurverHttpApiV1(domain, clientVersion);
+    return new CogSurverHttpApiV1(domain, clientVersion, ssl);
   }
 
   public static final CogSurverHttpApiV1 createHttpApi(String clientVersion) {
-    return createHttpApi(COGSURV_API_DOMAIN, clientVersion);
+    return createHttpApi(COGSURV_API_DOMAIN, clientVersion, true);
   }
 
   public static class Location {

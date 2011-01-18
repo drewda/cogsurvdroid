@@ -29,6 +29,7 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.scheme.SocketFactory;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
@@ -214,6 +215,7 @@ abstract public class AbstractHttpApi implements HttpApi {
         // by the default operator to look up socket factories.
         final SocketFactory sf = PlainSocketFactory.getSocketFactory();
         supportedSchemes.register(new Scheme("http", sf, 80));
+        supportedSchemes.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
 
         // Set some client http client parameter defaults.
         final HttpParams httpParams = createHttpParams();

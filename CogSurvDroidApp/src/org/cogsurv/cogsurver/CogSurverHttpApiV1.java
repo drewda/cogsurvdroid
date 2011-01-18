@@ -55,8 +55,15 @@ class CogSurverHttpApiV1 {
 
     private SimpleDateFormat iso8601DatetimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz");
     
-    public CogSurverHttpApiV1(String domain, String clientVersion) {
-        mApiBaseUrl = "http://" + domain + "/api";
+    public CogSurverHttpApiV1(String domain, String clientVersion, boolean ssl) {
+      String protocol;
+      if (ssl) {
+        protocol = "https://";
+      }
+      else {
+        protocol = "http://";
+      }
+        mApiBaseUrl = protocol + domain + "/api";
         mAuthScope = new AuthScope(domain, 80);
 
         mHttpApi = new HttpApiWithBasicAuth(mHttpClient, clientVersion);
