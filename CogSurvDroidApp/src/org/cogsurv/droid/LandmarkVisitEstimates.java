@@ -287,6 +287,22 @@ public class LandmarkVisitEstimates extends Activity implements OnClickListener 
       }
       /* a normal estimate-to-landmark */
       else {
+        // check for a zero distance
+        if (distanceNumber == 0) {
+          AlertDialog.Builder builder = new AlertDialog.Builder(this);
+          builder.setMessage(
+              "Please enter a distance greater than zero.")
+              .setCancelable(false).setPositiveButton("OK",
+                  new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                      waveDialogShown = true;
+                      dialog.cancel();
+                    }
+                  });
+          alert = builder.create();
+          alert.show();
+          break;
+        }
         // (1) record this directionDistanceEstimate
         directionDistanceEstimate.setStartLandmarkId(startLandmarkId);
         directionDistanceEstimate.setTargetLandmarkId(currentTargetLandmark
