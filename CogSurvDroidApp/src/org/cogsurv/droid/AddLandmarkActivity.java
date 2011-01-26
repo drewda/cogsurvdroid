@@ -5,7 +5,10 @@ import org.cogsurv.droid.error.LocationException;
 import org.cogsurv.droid.util.NotificationsUtil;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,9 +21,19 @@ import android.widget.Toast;
 public class AddLandmarkActivity extends Activity implements OnClickListener{
   private EditText newLandmarkNameEditText;
   
+  private BroadcastReceiver mLoggedOutReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      finish();
+    }
+  };
+  
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    
+    registerReceiver(mLoggedOutReceiver, new IntentFilter(
+        CogSurvDroid.INTENT_ACTION_LOGGED_OUT));
     
     setContentView(R.layout.add_landmark_activity);
     
@@ -39,6 +52,12 @@ public class AddLandmarkActivity extends Activity implements OnClickListener{
   public void onPause() {
     ((CogSurvDroid) getApplication()).removeLocationUpdates();
       super.onPause();
+  }
+  
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    unregisterReceiver(mLoggedOutReceiver);
   }
 
   @Override

@@ -47,10 +47,13 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     public void onReceive(Context context, Intent intent) {
       if (DEBUG) Log.d(TAG, "onReceive: " + intent);
-      TextView helloUserText = (TextView) findViewById(R.id.hello_user_text);
-      helloUserText.setText("Hello " + ((CogSurvDroid) getApplication()).getCurrentUser().getFullName());
+      setName();
     }
   };
+  private void setName() {
+    TextView helloUserText = (TextView) findViewById(R.id.hello_user_text);
+    helloUserText.setText("Hello " + ((CogSurvDroid) getApplication()).getCurrentUser().getFullName());
+  }
 
   private Button landmarkVisitButton;
 
@@ -84,6 +87,11 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     setContentView(R.layout.main_activity);
+    
+    // in case we're returning to MainActivity later, after initial boot-up
+    if (((CogSurvDroid) getApplication()).getCurrentUser() != null) {
+      setName();
+    }
 
     landmarkVisitButton = (Button) findViewById(R.id.landmark_visit_button);
     landmarkVisitButton.setOnClickListener(this);
@@ -139,7 +147,7 @@ public class MainActivity extends Activity implements OnClickListener {
       stopService(serviceIntent);
 
       // (2) finish MainActivity
-      finish();
+      sendBroadcast(new Intent(CogSurvDroid.INTENT_ACTION_LOGGED_OUT)); //TODO
       return true;
     }
     return super.onOptionsItemSelected(item);
