@@ -30,7 +30,8 @@
 			android:launchMode="singleInstance" />
 		<activity
 			android:name=".LandmarkVisitEstimates"
-			android:launchMode="singleInstance" />
+			android:launchMode="singleInstance" 
+			android:configChanges="orientation" />
 		<activity
 		  android:name=".AddLandmarkActivity"
 		  android:launchMode="singleInstance" />
